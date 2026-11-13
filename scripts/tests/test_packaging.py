@@ -207,6 +207,73 @@ class PackagingTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "build firmware first"):
             self.package()
 
+    def test_swap_keeps_unrelated_files(self):
+        self.package()
+        (self.output / "notes.txt").write_text("keep me")
+        (self.output / "other").mkdir()
+        self.package()
+        self.assertEqual((self.output / "notes.txt").read_text(), "keep me")
+        self.assertTrue((self.output / "other").is_dir())
+        self.assertTrue((self.output / "index.json").is_file())
+        self.assertEqual([p.name for p in self.output.parent.iterdir()], ["firmware"])
+
+    def test_failure_partway_through_swap_restores_previous_output(self):
+        import package_firmware
+        self.package()
+        before = (self.output / "index.json").read_bytes()
+        sticks = (self.output / "sticks3/manifest.json").read_bytes()
+        real, calls = os.replace, []
+
+        def flaky(src, dst):
+            calls.append(dst)
+            if len(calls) == 6:
+                raise OSError("disk full")
+            real(src, dst)
+
+        package_firmware.move = flaky
+        self.addCleanup(setattr, package_firmware, "move", real)
+        with self.assertRaisesRegex(OSError, "disk full"):
+            self.package()
+        self.assertEqual(before, (self.output / "index.json").read_bytes())
+        self.assertEqual(sticks, (self.output / "sticks3/manifest.json").read_bytes())
+        self.assertEqual([p.name for p in self.output.parent.iterdir()], ["firmware"])
+
+    def test_esptool_import_failure_reports_cause_and_search_path(self):
+        (self.core / "packages/tool-esptoolpy").unlink()
+        tool = self.core / "packages/tool-esptoolpy/esptool"
+        tool.mkdir(parents=True)
+        (tool / "bin_image.py").write_text("")
+        (tool / "__init__.py").write_text("import not_a_real_dependency_xyz\n")
+        for name in [m for m in sys.modules if m == "esptool" or m.startswith("esptool.")]:
+            del sys.modules[name]
+        self.addCleanup(lambda: [sys.modules.pop(m) for m in list(sys.modules)
+                                 if m == "esptool" or m.startswith("esptool.")])
+        with self.assertRaises(ValueError) as caught:
+            self.package()
+        message = str(caught.exception)
+        self.assertIn("not_a_real_dependency_xyz", message)
+        self.assertIn("site-packages", message)
+
+    def test_duplicate_boards_rejected(self):
+        with self.assertRaisesRegex(ValueError, "Duplicate board"):
+            self.package(envs=["sticks3", "sticks3"])
+        with self.assertRaisesRegex(ValueError, "Duplicate board"):
+            self.package(envs=["sticks3", "sticks3-macro"])
+        self.assertFalse(self.output.exists())
+
+    def test_classic_bootloader_fits_below_partition_table(self):
+        index = self.package()
+        boot = next(p for p in self.board(index, "esp32")["parts"] if p["path"].endswith("bootloader.bin"))
+        self.assertEqual(boot["offset"], 0x1000)
+        self.assertLessEqual(boot["offset"] + boot["size"], 0x8000)
+
+    def test_bootloader_reaching_nvs_rejected_on_classic_esp32(self):
+        # 0x1000 + 0x8100 crosses the partition table and runs into NVS at 0x9000.
+        path = self.root / ".pio/build/esp32/bootloader.bin"
+        path.write_bytes(path.read_bytes() + b"\xff" * 0x8100)
+        with self.assertRaisesRegex(ValueError, "overlaps NVS"):
+            self.package()
+
     def test_default_envs_exclude_aliases_and_native(self):
         options = {**self.options, "native": {}, "esp32s3": {"custom_board": "esp32s3"}}
         self.assertEqual(default_envs(options, BOARDS), ["sticks3", "esp32", "esp32c3", "esp32s3"])

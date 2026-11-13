@@ -30,15 +30,18 @@ def image_parser(core, chip):
     # penv. Put the tool first and the dependency locations last so they never
     # shadow the project's packages.
     sys.path.insert(0, str(tool))
-    for extra in [tool / "_contrib", *Path(core).glob("penv/lib/python*/site-packages"),
-                  Path(core) / "penv/Lib/site-packages"]:
+    searched = [tool / "_contrib", *Path(core).glob("penv/lib/python*/site-packages"),
+                Path(core) / "penv/Lib/site-packages"]
+    for extra in searched:
         if extra.is_dir() and str(extra) not in sys.path:
             sys.path.append(str(extra))
     try:
         from esptool import bin_image
         return getattr(bin_image, IMAGE_CLASSES[chip])
     except (ImportError, AttributeError) as exc:
-        raise ValueError("Cannot load PlatformIO esptool; rebuild/install firmware tools") from exc
+        raise ValueError(
+            f"Cannot load PlatformIO esptool ({exc!r}); looked for dependencies in "
+            f"{[str(p) for p in searched]}; rebuild/install firmware tools") from exc
 
 
 def validate_image(data, name, parser, chip):

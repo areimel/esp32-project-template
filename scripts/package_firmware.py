@@ -104,6 +104,42 @@ def board_build(project, env, opts, boards, version, core):
     return record, config, config_bytes, blobs, manifest
 
 
+move = os.replace  # indirection so tests can inject a failure
+
+
+def _remove(path):
+    if path.is_dir():
+        shutil.rmtree(path)
+    elif path.exists():
+        path.unlink()
+
+
+def publish(stage, output, names):
+    """Swap the packager-owned `names` from `stage` into `output`, restoring on failure.
+
+    Unrelated files in `output` are never touched. Old copies are deleted last.
+    """
+    output.mkdir(parents=True, exist_ok=True)
+    backup = Path(tempfile.mkdtemp(prefix=".firmware-old-", dir=output.parent))
+    aside, placed = [], []
+    try:
+        for name in names:
+            if (output / name).exists():
+                move(output / name, backup / name)
+                aside.append(name)
+            move(stage / name, output / name)
+            placed.append(name)
+    except BaseException:
+        for name in placed:
+            _remove(output / name)
+        for name in aside:
+            _remove(output / name)
+            os.replace(backup / name, output / name)
+        shutil.rmtree(backup, ignore_errors=True)
+        raise
+    shutil.rmtree(backup, ignore_errors=True)
+
+
 def package(project, output, version=None, commit=None, envs=None, platformio_dir=None,
             env_options=None):
     project, output = Path(project), Path(output)
@@ -120,6 +156,10 @@ def package(project, output, version=None, commit=None, envs=None, platformio_di
         commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=project, text=True).strip()
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise ValueError("Commit must be a full lowercase Git SHA")
+    ids = [options.get(env, {}).get("custom_board", env) for env in envs]
+    duplicates = sorted({i for i in ids if ids.count(i) > 1})
+    if len(set(envs)) != len(envs) or duplicates:
+        raise ValueError(f"Duplicate board in one run: envs {envs}, board ids {duplicates or sorted(set(envs))}")
     core = Path(platformio_dir or os.environ.get("PLATFORMIO_CORE_DIR", Path.home() / ".platformio"))
     results = [board_build(project, env, options.get(env, {}), boards, version, core) for env in envs]
     config, config_bytes = results[0][1], results[0][2]
@@ -131,9 +171,10 @@ def package(project, output, version=None, commit=None, envs=None, platformio_di
                          "tagline": config["project"].get("tagline", ""),
                          "description": config["project"].get("description", "")},
              "config": config, "boards": [r[0] for r in results]}
-    # Stage next to the output so the final rename is atomic; any failure above wrote nothing.
+    # Stage next to the output; any failure above wrote nothing.
     output.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=".firmware-", dir=output.parent))
+    stage.chmod(0o755)  # mkdtemp is 0700; the published files must be readable
     try:
         for env, (_, _, _, blobs, manifest) in zip(envs, results):
             (stage / env).mkdir()
@@ -141,12 +182,9 @@ def package(project, output, version=None, commit=None, envs=None, platformio_di
                 (stage / env / name).write_bytes(data)
             (stage / env / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
         (stage / "index.json").write_text(json.dumps(index, indent=2) + "\n")
-        if output.exists():
-            shutil.rmtree(output)
-        os.replace(stage, output)
-    except BaseException:
+        publish(stage, output, [*envs, "index.json"])
+    finally:
         shutil.rmtree(stage, ignore_errors=True)
-        raise
     return index
 
 
