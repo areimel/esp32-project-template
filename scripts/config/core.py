@@ -29,6 +29,7 @@ class Context:
     board: dict
     secrets: dict = field(default_factory=dict)
     warnings: list = field(default_factory=list)
+    features: dict = field(default_factory=dict)  # final FEATURE_* flags, set by render
 
 
 class UniqueKeyLoader(yaml.SafeLoader):
@@ -51,7 +52,10 @@ UniqueKeyLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, 
 
 
 def load_yaml(path):
-    return yaml.load(Path(path).read_text(encoding="utf-8"), Loader=UniqueKeyLoader)
+    try:
+        return yaml.load(Path(path).read_text(encoding="utf-8"), Loader=UniqueKeyLoader)
+    except yaml.YAMLError as exc:
+        raise ConfigError(str(path), f"malformed YAML: {exc}") from exc
 
 
 def fields(value, required, path, optional=()):

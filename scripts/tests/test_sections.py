@@ -90,6 +90,14 @@ class SectionTests(unittest.TestCase):
         self.assertNotIn("OTA_PASSWORD", header)
         self.assertIn("OTA disabled: no ota_password in secrets.yaml", ctx.warnings)
 
+    def test_ota_forced_off_without_wifi_emits_no_password(self):
+        self.data["wifi"]["enabled"] = False
+        ctx = make_ctx(secrets={"ota_password": "pw"})
+        header, features = render(self.data, ctx)
+        self.assertFalse(features["FEATURE_OTA"])
+        self.assertNotIn("OTA_PASSWORD", header)
+        self.assertIn("OTA disabled: wifi.enabled is false", ctx.warnings)
+
     def test_dev_wifi_from_secrets(self):
         header, _ = render(self.data, make_ctx(secrets={"wifi_ssid": "net", "wifi_password": "pw"}))
         self.assertIn('DEV_WIFI_SSID = "net"', header)

@@ -23,6 +23,6 @@ def features(cfg, ctx):
 
 def emit(cfg, ctx):
     password = ctx.secrets.get("ota_password")
-    if not (cfg["enabled"] and password):
+    if not ctx.features.get("FEATURE_OTA"):
         return []
     return ["#if FEATURE_OTA", f"constexpr const char* OTA_PASSWORD = {cstr(password)};", "#endif"]

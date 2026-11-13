@@ -9,7 +9,8 @@
 #   project   name (1-32 chars), tagline and description for the UI and web installer
 #   ble       Bluetooth LE HID keyboard: enabled, name (1-29 UTF-8 bytes), keystroke_ms (5-100)
 #   wifi      enabled, hostname (RFC 1123 label, 1-32); provision via Improv Serial
-#   ota       enabled; only compiled in when secrets.yaml has ota_password
+#   ota       enabled; needs wifi.enabled: true and ota_password in secrets.yaml,
+#             otherwise it is left out of the build with a warning
 #   display   enabled, brightness (1-255); ignored on boards without a display
 #   gestures  debounce_ms < double_click_ms < long_press_ms
 #   buttons   list, one entry per physical button (extras are dropped with a warning);

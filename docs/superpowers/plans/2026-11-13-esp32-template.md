@@ -54,7 +54,7 @@ esp32:   {label: "ESP32 DevKit (classic)", chip: ESP32, driver: gpio, button_pin
 ```
 
 **CPPDEFINES from the pre-script:**
-- `BOARD_ID="<id>"`, `BOARD_LABEL="<label>"`
+- `APP_BOARD_ID="<id>"` (not BOARD_ID: M5Unified uses that macro), `BOARD_LABEL="<label>"`
 - `BOARD_DRIVER_M5=1` or `BOARD_DRIVER_GPIO=1`
 - `BOARD_BUTTON_COUNT=<n>`, `BOARD_BUTTON_PINS={0}` (gpio only)
 - `BOARD_LED_PIN=<pin|-1>`, `BOARD_LED_RGB=0|1`

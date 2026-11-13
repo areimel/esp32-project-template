@@ -67,6 +67,15 @@ class CoreTests(unittest.TestCase):
             self.assertEqual(load_secrets(path)["wifi_ssid"], "s")
             self.assertEqual(load_secrets(Path(tmp) / "missing.yaml"), {})
 
+    def test_malformed_yaml_names_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "secrets.yaml"
+            path.write_text("ota_password: [unclosed\n", encoding="utf-8")
+            with self.assertRaises(ConfigError) as caught:
+                load_secrets(path)
+            self.assertIn("secrets.yaml", str(caught.exception))
+            self.assertIn("malformed YAML", str(caught.exception))
+
     def test_schema_hook(self):
         with tempfile.TemporaryDirectory() as tmp:
             Path(tmp, "extra.py").write_text(

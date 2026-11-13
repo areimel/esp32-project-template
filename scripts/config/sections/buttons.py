@@ -12,7 +12,6 @@ def button_count(board):
     return board.get("buttons") or len(board.get("button_pins", []))
 
 
-
 def _action(value, path):
     """Return (label, mods, usage); an unassigned slot is ("", 0, 0)."""
     if value is None:

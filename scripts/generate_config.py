@@ -33,6 +33,7 @@ def render(data, ctx, base=Path(".")):
     if features.get("FEATURE_OTA") and not features.get("FEATURE_WIFI"):
         features["FEATURE_OTA"] = False
         ctx.warnings.append("OTA disabled: wifi.enabled is false")
+    ctx.features = features
     includes = sorted({inc for m, _ in validated for inc in m.INCLUDES})
     lines = [HEADER, "#pragma once", *[f"#include {inc}" for inc in includes], "",
              "namespace AppConfig {"]
@@ -56,7 +57,7 @@ def generate(source, destination, ctx):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="config.yaml")
-    parser.add_argument("--board", default="esp32")
+    parser.add_argument("--board", required=True)
     parser.add_argument("--secrets", default="secrets.yaml")
     parser.add_argument("--output", default="build/generated/generated_config.h")
     args = parser.parse_args()
