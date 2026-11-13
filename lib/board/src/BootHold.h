@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include "Board.h"
+#include "Log.h"
 
 // Returns true if every button stays held for holdMs from boot, calling
 // progress(remainingMs) while held. Returns false as soon as any button is
@@ -26,7 +27,12 @@ bool holdAllButtonsAtBoot(uint32_t holdMs, F progress) {
     const uint32_t elapsed = millis() - started;
     if (elapsed >= holdMs) {
       progress(0);
+      const uint32_t releaseStart = millis();
       while (anyHeld()) {
+        if (millis() - releaseStart >= 5000) {
+          LOG_W("boot hold: buttons not released after 5000 ms, continuing");
+          break;
+        }
         delay(10);
         board::update();
       }

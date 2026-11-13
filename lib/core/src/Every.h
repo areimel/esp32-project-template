@@ -6,6 +6,7 @@ class Every {
  public:
   explicit Every(uint32_t periodMs) : period_(periodMs) {}
 
+  // Next due time is measured from the actual call time, so late calls drift and never burst.
   // True on the first call, then once per period.
   bool due(uint32_t now) {
     if (started_ && uint32_t(now - last_) < period_) return false;
