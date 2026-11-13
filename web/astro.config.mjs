@@ -1,7 +1,7 @@
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  site: "https://areimel.github.io",
-  base: process.env.BASE_PATH || "/stick-s3-macro-clicker/",
+  site: process.env.SITE_URL ?? "http://localhost:4321",
+  base: process.env.BASE_PATH ?? "/",
   output: "static",
 });

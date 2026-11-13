@@ -1,0 +1,19 @@
+---
+/* Classes: section, section-title, disclosure */
+import Disclosure from "./Disclosure.astro";
+interface Props {
+  faq: { q: string; a: string }[];
+}
+const { faq } = Astro.props;
+---
+
+<section class="section" id="troubleshooting">
+  <h2 class="section-title">Troubleshooting</h2>
+  {
+    faq.map((item) => (
+      <Disclosure summary={item.q}>
+        <p>{item.a}</p>
+      </Disclosure>
+    ))
+  }
+</section>

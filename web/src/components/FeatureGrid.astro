@@ -1,0 +1,21 @@
+---
+/* Classes: section, section-title, feature-grid, panel, panel-head, muted */
+import Panel from "./Panel.astro";
+interface Props {
+  features: { title: string; body: string }[];
+}
+const { features } = Astro.props;
+---
+
+<section class="section" id="features">
+  <h2 class="section-title">What you get</h2>
+  <div class="feature-grid">
+    {
+      features.map((f) => (
+        <Panel title={f.title}>
+          <p class="muted">{f.body}</p>
+        </Panel>
+      ))
+    }
+  </div>
+</section>

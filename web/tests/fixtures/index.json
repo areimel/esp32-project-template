@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 2,
+  "version": "v1.2.3",
+  "commit": "0123456789abcdef0123456789abcdef01234567",
+  "configSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "project": {
+    "name": "Fixture Starter",
+    "tagline": "A fixture tagline.",
+    "description": "A fixture description for tests."
+  },
+  "config": { "project": { "name": "Fixture Starter" } },
+  "boards": [
+    {
+      "id": "sticks3",
+      "label": "M5Stack Stick-S3",
+      "chip": "ESP32-S3",
+      "buttons": 2,
+      "display": true,
+      "battery": true,
+      "features": ["ble_hid", "wifi"],
+      "manifest": "sticks3/manifest.json",
+      "parts": [
+        { "path": "sticks3/bootloader.bin", "offset": 0, "size": 4, "sha256": "9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a" },
+        { "path": "sticks3/firmware.bin", "offset": 65536, "size": 4, "sha256": "9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a" }
+      ]
+    },
+    {
+      "id": "esp32",
+      "label": "ESP32 DevKit (classic)",
+      "chip": "ESP32",
+      "buttons": 1,
+      "display": false,
+      "battery": false,
+      "features": ["wifi"],
+      "manifest": "esp32/manifest.json",
+      "parts": [
+        { "path": "esp32/bootloader.bin", "offset": 4096, "size": 4, "sha256": "9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a" },
+        { "path": "esp32/firmware.bin", "offset": 65536, "size": 4, "sha256": "9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a" }
+      ]
+    }
+  ]
+}

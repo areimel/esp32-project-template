@@ -1,0 +1,43 @@
+---
+/* Classes: panel, panel-head, panel-tag, kv, kv-label, kv-value, board-meta, btn, btn-primary, note, muted */
+import { boardSummary, type Board } from "../lib/project";
+import Panel from "./Panel.astro";
+import KeyValue from "./KeyValue.astro";
+interface Props {
+  board: Board;
+  version: string;
+  hidden?: boolean;
+}
+const { board, version, hidden = false } = Astro.props;
+const manifest = `${import.meta.env.BASE_URL}firmware/${board.manifest}`;
+---
+
+<div data-install-for={board.id} hidden={hidden}>
+  <Panel tag="Install" title={board.label}>
+    <p class="board-meta">{boardSummary(board)}</p>
+    <KeyValue
+      items={[
+        { label: "Version", value: version },
+        { label: "Chip", value: board.chip },
+      ]}
+    />
+    <esp-web-install-button manifest={manifest}>
+      <button slot="activate" type="button" class="btn btn-primary">
+        Install {board.label}
+      </button>
+      <p slot="unsupported" class="note">
+        This browser cannot flash over USB. Use Chrome, Edge or Opera on a desktop.
+      </p>
+      <p slot="not-allowed" class="note">
+        Web Serial needs a secure page. Open this site over HTTPS.
+      </p>
+    </esp-web-install-button>
+    <p class="muted">
+      Settings kept on the device survive a reflash unless you choose to erase.
+    </p>
+  </Panel>
+</div>
+
+<script>
+  import "esp-web-tools/dist/web/install-button.js";
+</script>

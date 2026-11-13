@@ -1,0 +1,14 @@
+---
+/* Classes: section, section-title, steps */
+interface Props {
+  steps: string[];
+}
+const { steps } = Astro.props;
+---
+
+<section class="section" id="steps">
+  <h2 class="section-title">How to install</h2>
+  <ol class="steps">
+    {steps.map((step) => <li>{step}</li>)}
+  </ol>
+</section>

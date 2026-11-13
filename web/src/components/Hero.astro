@@ -1,0 +1,17 @@
+---
+/* Classes: hero, eyebrow, muted */
+interface Props {
+  name: string;
+  tagline: string;
+  description: string;
+  version?: string;
+}
+const { name, tagline, description, version } = Astro.props;
+---
+
+<section class="hero" aria-labelledby="page-title">
+  <p class="eyebrow">{version ? `Firmware ${version}` : "Firmware starter"}</p>
+  <h1 id="page-title">{name}</h1>
+  <p>{tagline}</p>
+  <p class="muted">{description}</p>
+</section>
