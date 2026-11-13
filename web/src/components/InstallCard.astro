@@ -1,6 +1,6 @@
 ---
 /* Classes: panel, panel-head, panel-tag, kv, kv-label, kv-value, board-meta, btn, btn-primary, note, muted */
-import { boardSummary, type Board } from "../lib/project";
+import { boardSummary, withBase, type Board } from "../lib/project";
 import Panel from "./Panel.astro";
 import KeyValue from "./KeyValue.astro";
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
   hidden?: boolean;
 }
 const { board, version, hidden = false } = Astro.props;
-const manifest = `${import.meta.env.BASE_URL}firmware/${board.manifest}`;
+const manifest = withBase(`firmware/${board.manifest}`);
 ---
 
 <div data-install-for={board.id} hidden={hidden}>

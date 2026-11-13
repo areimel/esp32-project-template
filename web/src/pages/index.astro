@@ -21,10 +21,19 @@ const project = index?.project ?? site.project;
   {
     index ? (
       <>
-        <BoardPicker boards={index.boards} />
-        {index.boards.map((board, i) => (
-          <InstallCard board={board} version={index.version} hidden={i !== 0} />
-        ))}
+        {index.boards.length > 1 ? (
+          <>
+            <BoardPicker boards={index.boards} />
+            {index.boards.map((board, i) => (
+              <InstallCard board={board} version={index.version} hidden={i !== 0} />
+            ))}
+          </>
+        ) : (
+          <section class="section" id="install">
+            <h2 class="section-title">Install</h2>
+            <InstallCard board={index.boards[0]} version={index.version} />
+          </section>
+        )}
         <Steps steps={site.steps} />
         <FeatureGrid features={site.features} />
         <Downloads index={index} />

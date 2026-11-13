@@ -1,13 +1,13 @@
 ---
 /* Classes: section, section-title, disclosure, kv, kv-label, kv-value, btn, btn-ghost, muted */
-import type { FirmwareIndex } from "../lib/project";
+import { withBase, type FirmwareIndex } from "../lib/project";
 import Disclosure from "./Disclosure.astro";
 import KeyValue from "./KeyValue.astro";
 interface Props {
   index: FirmwareIndex;
 }
 const { index } = Astro.props;
-const base = `${import.meta.env.BASE_URL}firmware/`;
+const base = withBase("firmware/");
 ---
 
 <section class="section" id="downloads">

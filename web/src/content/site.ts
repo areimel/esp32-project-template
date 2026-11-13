@@ -6,9 +6,14 @@ export const site = {
     description:
       "A PlatformIO and Arduino template for ESP32 boards with optional Bluetooth HID, WiFi, OTA and display modules, configured from a single YAML file and installable from the browser.",
   },
-  repository: "https://github.com/areimel/esp32-project-template",
+  /** Source link for forks: REPO_URL, else GitHub Actions' repository, else none. */
+  repository:
+    process.env.REPO_URL ||
+    (process.env.GITHUB_REPOSITORY
+      ? `https://github.com/${process.env.GITHUB_REPOSITORY}`
+      : undefined),
   noRelease:
-    "No release published yet. Build locally with `pio run`, or publish a release to enable browser install.",
+    "No release published yet. Build locally with pio run, or publish a release to enable browser install.",
   otaNote:
     "Release builds have OTA disabled. OTA is for local development builds, enabled by an ota_password in your own secrets.yaml.",
   features: [

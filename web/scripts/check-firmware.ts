@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { resolve } from "node:path";
+import { resolve, sep } from "node:path";
 import { readIndex } from "../src/lib/project";
 
 // Optional argv[2] overrides the packaged firmware directory (used by tests).
@@ -16,7 +16,10 @@ try {
     let count = 0;
     for (const board of index.boards)
       for (const part of board.parts) {
-        const bytes = await readFile(resolve(dir, part.path));
+        const file = resolve(dir, part.path);
+        if (!file.startsWith(dir + sep))
+          throw new Error(`Part path escapes the firmware directory: ${part.path}`);
+        const bytes = await readFile(file);
         const hash = createHash("sha256").update(bytes).digest("hex");
         if (bytes.length !== part.size || hash !== part.sha256)
           throw new Error(`Size or checksum mismatch: ${part.path}`);
