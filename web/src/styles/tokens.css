@@ -1,0 +1,58 @@
+/* Design tokens. The only file that contains literal colors. Dark is the default. */
+:root {
+  --bg: #141310;
+  --panel: #1c1b17;
+  --ink: #efebe0;
+  --dim: #a39e90;
+  --line: #39372f;
+  --accent: #ff5b1a;
+  --accent-ink: #141310;
+  --link-hover: #ff5b1a;
+  color-scheme: dark;
+
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 40px;
+
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-md: 0.9375rem;
+  --text-lg: 1.25rem;
+  --text-xl: clamp(2rem, 6vw, 3.25rem);
+
+  --track-tight: -0.02em;
+  --track-wide: 0.16em;
+  --radius: 2px;
+  --measure: 72rem;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f6f2e8;
+    --panel: #fffdf7;
+    --ink: #1d1b16;
+    --dim: #655f52;
+    --line: #d4cdbb;
+    --accent: #c93d00;
+    --accent-ink: #fffdf7;
+    --link-hover: #c93d00;
+    color-scheme: light;
+  }
+}
+
+:root[data-theme="light"] {
+  --bg: #f6f2e8;
+  --panel: #fffdf7;
+  --ink: #1d1b16;
+  --dim: #655f52;
+  --line: #d4cdbb;
+  --accent: #c93d00;
+  --accent-ink: #fffdf7;
+  --link-hover: #c93d00;
+  color-scheme: light;
+}

@@ -1,25 +1,36 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { validateManifest } from "../src/lib/firmware";
+import { resolve, sep } from "node:path";
+import { readIndex } from "../src/lib/project";
+
+// Optional argv[2] overrides the packaged firmware directory (used by tests).
+const dir = process.argv[2]
+  ? resolve(process.argv[2])
+  : resolve(import.meta.dirname, "../public/firmware");
 
 try {
-  const base = new URL("../public/firmware/", import.meta.url);
-  const manifest = validateManifest(
-    JSON.parse(await readFile(new URL("manifest.json", base), "utf8")),
-  );
-  for (const part of manifest.parts) {
-    const bytes = await readFile(new URL(part.path, base));
-    const hash = createHash("sha256").update(bytes).digest("hex");
-    if (bytes.length !== part.size || hash !== part.sha256)
-      throw new Error(`Size or checksum mismatch: ${part.path}`);
+  const index = readIndex(dir);
+  if (!index) {
+    console.log("No packaged firmware; building without a release");
+  } else {
+    let count = 0;
+    for (const board of index.boards)
+      for (const part of board.parts) {
+        const file = resolve(dir, part.path);
+        if (!file.startsWith(dir + sep))
+          throw new Error(`Part path escapes the firmware directory: ${part.path}`);
+        const bytes = await readFile(file);
+        const hash = createHash("sha256").update(bytes).digest("hex");
+        if (bytes.length !== part.size || hash !== part.sha256)
+          throw new Error(`Size or checksum mismatch: ${part.path}`);
+        count++;
+      }
+    console.log(
+      `Firmware package verified: ${index.version} (${index.boards.length} boards, ${count} parts)`,
+    );
   }
-  console.log(
-    `Firmware package verified: ${manifest.version} (${manifest.parts.length} parts)`,
-  );
 } catch (error) {
-  console.error(
-    "A valid firmware package is required before building the site. Run the repository firmware packaging command first.",
-  );
+  console.error("The packaged firmware is invalid; refusing to build the site.");
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);
 }

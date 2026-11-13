@@ -1,5 +1,5 @@
 {
-  "name": "stick-s3-macro-flasher",
+  "name": "esp32-starter-site",
   "private": true,
   "type": "module",
   "engines": {
@@ -13,14 +13,12 @@
     "test": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
-    "@noble/hashes": "2.4.0",
     "astro": "7.3.8",
-    "esptool-js": "0.7.0"
+    "esp-web-tools": "10.5.2"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
     "@types/node": "22.20.5",
-    "@types/w3c-web-serial": "1.0.8",
     "tsx": "4.23.15",
     "typescript": "5.9.3"
   }

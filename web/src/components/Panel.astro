@@ -1,0 +1,21 @@
+---
+/* Classes: panel, panel-head, panel-tag */
+interface Props {
+  tag?: string;
+  title?: string;
+  id?: string;
+}
+const { tag, title, id } = Astro.props;
+---
+
+<section class="panel" id={id}>
+  {
+    (tag || title) && (
+      <div class="panel-head">
+        {title && <h3>{title}</h3>}
+        {tag && <span class="panel-tag">{tag}</span>}
+      </div>
+    )
+  }
+  <slot />
+</section>

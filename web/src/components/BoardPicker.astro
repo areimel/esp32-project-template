@@ -1,0 +1,48 @@
+---
+/* Classes: section, section-title, board-grid, board-card, board-meta, btn, btn-primary, btn-ghost */
+import { boardSummary, type Board } from "../lib/project";
+interface Props {
+  boards: Board[];
+}
+const { boards } = Astro.props;
+---
+
+<section class="section" id="install">
+  <h2 class="section-title">Choose your board</h2>
+  <div class="board-grid" data-board-picker>
+    {
+      boards.map((board, i) => (
+        <article class="board-card">
+          <h3>{board.label}</h3>
+          <p class="board-meta">{boardSummary(board)}</p>
+          <button
+            type="button"
+            class={i === 0 ? "btn btn-primary" : "btn btn-ghost"}
+            data-select={board.id}
+            aria-pressed={i === 0 ? "true" : "false"}
+          >
+            Select
+          </button>
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  const picker = document.querySelector<HTMLElement>("[data-board-picker]");
+  function select(id: string) {
+    picker?.querySelectorAll<HTMLButtonElement>("[data-select]").forEach((b) => {
+      const on = b.dataset.select === id;
+      b.setAttribute("aria-pressed", String(on));
+      b.className = on ? "btn btn-primary" : "btn btn-ghost";
+    });
+    document.querySelectorAll<HTMLElement>("[data-install-for]").forEach((el) => {
+      el.hidden = el.dataset.installFor !== id;
+    });
+  }
+  picker?.addEventListener("click", (e) => {
+    const target = (e.target as HTMLElement).closest<HTMLElement>("[data-select]");
+    if (target?.dataset.select) select(target.dataset.select);
+  });
+</script>

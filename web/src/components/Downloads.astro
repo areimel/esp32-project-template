@@ -1,0 +1,55 @@
+---
+/* Classes: section, section-title, disclosure, kv, kv-label, kv-value, btn, btn-ghost, muted */
+import { withBase, type FirmwareIndex } from "../lib/project";
+import Disclosure from "./Disclosure.astro";
+import KeyValue from "./KeyValue.astro";
+interface Props {
+  index: FirmwareIndex;
+}
+const { index } = Astro.props;
+const base = withBase("firmware/");
+---
+
+<section class="section" id="downloads">
+  <h2 class="section-title">Firmware files</h2>
+  <p class="muted">
+    For command-line flashing and verification. Write each image at its listed
+    offset.
+  </p>
+  <KeyValue
+    items={[
+      { label: "Version", value: index.version },
+      { label: "Commit", value: index.commit.slice(0, 12), title: index.commit },
+      {
+        label: "Config SHA256",
+        value: `${index.configSha256.slice(0, 16)}…`,
+        title: index.configSha256,
+      },
+    ]}
+  />
+  <a class="btn btn-ghost" href={`${base}index.json`} download>Release index (JSON)</a>
+  {
+    index.boards.map((board) => (
+      <Disclosure summary={`${board.label}: ${board.parts.length} files`}>
+        <a class="btn btn-ghost" href={`${base}${board.manifest}`} download>
+          manifest.json
+        </a>
+        <KeyValue
+          items={board.parts.map((part) => ({
+            label: `${part.path} @ 0x${part.offset.toString(16).toUpperCase()}`,
+            value: `${part.size.toLocaleString("en-US")} bytes · ${part.sha256}`,
+          }))}
+        />
+        <ul>
+          {board.parts.map((part) => (
+            <li>
+              <a href={`${base}${part.path}`} download>
+                {part.path}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </Disclosure>
+    ))
+  }
+</section>

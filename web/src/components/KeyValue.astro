@@ -1,0 +1,20 @@
+---
+/* Classes: kv, kv-label, kv-value */
+interface Props {
+  items: { label: string; value: string; title?: string }[];
+}
+const { items } = Astro.props;
+---
+
+<dl class="kv">
+  {
+    items.map((item) => (
+      <>
+        <dt class="kv-label">{item.label}</dt>
+        <dd class="kv-value" title={item.title}>
+          {item.value}
+        </dd>
+      </>
+    ))
+  }
+</dl>
