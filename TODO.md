@@ -1,20 +1,26 @@
-# Macro profiles rework
+# ESP32 starter template rework
 
-Reworking the Stick-S3 Deck Clicker into the Stick-S3 Macro Clicker.
+Design: docs/superpowers/specs/2026-11-13-esp32-template-design.md
 
-- [x] Import the web flasher, packaging script, and CI/release workflows from the deck clicker.
-- [x] Profile-based YAML schema and generator: key combos, text, sequences, delays, labels, limits.
-- [x] Gesture engine refactor, A+B chord controller, and profile picker.
-- [x] Macro player, paced single-stroke BLE transport, widened HID map, abort on press/disconnect.
-- [x] Remembered active profile (NVS) clamped when profiles shrink.
-- [x] Agency-styled display: boot, HOME, PICKER, TRANSMIT, bond reset screens.
-- [x] Host tests: configuration/packaging (Python) and gesture, controller, player, BLE (C++).
-- [x] Rebrand the web flasher for macro profiles.
-- [x] Rewrite README, AGENTS.md, and TODO.md.
-- [ ] User: forget the old pairing, re-pair, and confirm the keyboard reaches ready.
-- [ ] User: verify every gesture and the A+B picker on the device (including abort and the 10 s timeout).
-- [ ] User: type the long CLAUDE prompts at `keystroke_ms: 15`; raise it if characters drop.
-- [ ] User: check display legibility at the configured brightness.
-- [ ] User: verify web flashing (install, normal reflash, clean install) on hardware.
-- [x] Publish the first release (v1.0.0) and Pages site: https://areimel.github.io/stick-s3-macro-clicker/
-- [ ] User: measure battery runtime if it matters (no figure is claimed).
+- [x] 0. Remove demo media and stray pnpm files; add design spec
+- [ ] 1. pioarduino platform, multi-board platformio.ini, boards/, lib/core + board layer
+- [ ] 2a. Modular config generator (core + sections) and split Python tests
+- [ ] 2b. lib/input (Gesture) + lib/store (Settings) with native Unity tests
+- [ ] 2c. lib/ble_hid with native stubs
+- [ ] 2d. lib/net: WiFi, Improv serial, dev-only OTA
+- [ ] 2e. lib/display: Theme + Screen base
+- [ ] 3a. Minimal default app (src/main.cpp)
+- [ ] 3b. Macro clicker moved to examples/macro-clicker
+- [ ] 4a. Board-driven packaging -> ESP Web Tools manifests + index.json
+- [ ] 4b. Microsite on ESP Web Tools with shared components
+- [ ] 4c. Site CSS split into tokens/base/layout/components
+- [ ] 4d. Composite CI setup action, board matrix, release workflow
+- [ ] 5. README + docs/ + AGENTS.md for the template
+- [ ] 6. Code review, fixes, final verification
+
+## Pending physical checks (user)
+- [ ] Flash Stick-S3 from the site; confirm boot and display
+- [ ] Improv WiFi provisioning after web install
+- [ ] Dev OTA upload with secrets.yaml password
+- [ ] BLE pairing and button gestures (default app and macro example)
+- [ ] C3 / classic ESP32 boards (compile-verified only)
