@@ -1,4 +1,5 @@
 #include "BleKeyboard.h"
+#if FEATURE_BLE_HID
 #include <Arduino.h>
 
 namespace {
@@ -19,7 +20,7 @@ uint8_t reportMap[] = {
 constexpr uint8_t kMaxUsage = 0xE7;
 }
 
-void MacroKeyboard::begin(const char* name, uint16_t keystrokeMs) {
+void BleKeyboard::begin(const char* name, uint16_t keystrokeMs) {
   keystrokeMs_ = keystrokeMs;
   NimBLEDevice::init(name);
   NimBLEDevice::setSecurityAuth(true, false, true);
@@ -52,22 +53,22 @@ void MacroKeyboard::begin(const char* name, uint16_t keystrokeMs) {
   Serial.printf("BLE advertising: %s\n", name);
 }
 
-bool MacroKeyboard::connected() const {
+bool BleKeyboard::connected() const {
   return connection_.load() != BLE_HS_CONN_HANDLE_NONE;
 }
 
-bool MacroKeyboard::ready() const {
+bool BleKeyboard::ready() const {
   return connected() && encrypted_.load() && subscribed_.load();
 }
 
-void MacroKeyboard::resetPending() {
+void BleKeyboard::resetPending() {
   phase_ = Phase::Idle;
   abortHold_ = false;
   mods_ = usage_ = 0;
   baselinePending_ = true;
 }
 
-void MacroKeyboard::syncGeneration() {
+void BleKeyboard::syncGeneration() {
   const uint32_t generation = generation_.load();
   if (generation != seenGeneration_) {
     resetPending();
@@ -75,7 +76,7 @@ void MacroKeyboard::syncGeneration() {
   }
 }
 
-bool MacroKeyboard::send(uint8_t mods, uint8_t usage) {
+bool BleKeyboard::send(uint8_t mods, uint8_t usage) {
   syncGeneration();
   if (!ready() || phase_ != Phase::Idle) return false;
   if ((mods == 0 && usage == 0) || usage > kMaxUsage) return false;
@@ -85,7 +86,7 @@ bool MacroKeyboard::send(uint8_t mods, uint8_t usage) {
   return true;
 }
 
-bool MacroKeyboard::sendReport(uint8_t mods, uint8_t usage) {
+bool BleKeyboard::sendReport(uint8_t mods, uint8_t usage) {
   if (!ready()) return false;
   const uint16_t handle = connection_.load();
   uint8_t report[8] = {mods, 0, usage, 0, 0, 0, 0, 0};
@@ -93,7 +94,7 @@ bool MacroKeyboard::sendReport(uint8_t mods, uint8_t usage) {
   return input_->notify(report, sizeof(report), handle);
 }
 
-void MacroKeyboard::releaseAll() {
+void BleKeyboard::releaseAll() {
   syncGeneration();
   if (phase_ == Phase::PressPending) {
     phase_ = Phase::Idle;  // never sent; nothing to release
@@ -107,7 +108,7 @@ void MacroKeyboard::releaseAll() {
   }
 }
 
-void MacroKeyboard::update(uint32_t now) {
+void BleKeyboard::update(uint32_t now) {
   syncGeneration();
   if (!ready()) {
     resetPending();
@@ -142,11 +143,11 @@ void MacroKeyboard::update(uint32_t now) {
   }
 }
 
-void MacroKeyboard::setBatteryLevel(uint8_t level) {
+void BleKeyboard::setBatteryLevel(uint8_t level) {
   if (hid_) hid_->setBatteryLevel(level > 100 ? 100 : level, ready());
 }
 
-void MacroKeyboard::clearBonds() {
+void BleKeyboard::clearBonds() {
   // Intended for startup, before accepting button gestures.
   const uint16_t handle = connection_.load();
   if (ready()) sendReport(0, 0);
@@ -158,7 +159,7 @@ void MacroKeyboard::clearBonds() {
   NimBLEDevice::deleteAllBonds();
 }
 
-void MacroKeyboard::onConnect(NimBLEServer* server, NimBLEConnInfo& info) {
+void BleKeyboard::onConnect(NimBLEServer* server, NimBLEConnInfo& info) {
   if (connected()) {
     server->disconnect(info.getConnHandle());
     return;
@@ -171,7 +172,7 @@ void MacroKeyboard::onConnect(NimBLEServer* server, NimBLEConnInfo& info) {
   NimBLEDevice::startSecurity(info.getConnHandle());
 }
 
-void MacroKeyboard::onDisconnect(NimBLEServer*, NimBLEConnInfo& info, int) {
+void BleKeyboard::onDisconnect(NimBLEServer*, NimBLEConnInfo& info, int) {
   if (connection_.load() != info.getConnHandle()) return;
   connection_.store(BLE_HS_CONN_HANDLE_NONE);
   encrypted_.store(false);
@@ -179,7 +180,7 @@ void MacroKeyboard::onDisconnect(NimBLEServer*, NimBLEConnInfo& info, int) {
   generation_.fetch_add(1);
 }
 
-void MacroKeyboard::onAuthenticationComplete(NimBLEConnInfo& info) {
+void BleKeyboard::onAuthenticationComplete(NimBLEConnInfo& info) {
   if (connection_.load() != info.getConnHandle()) return;
   encrypted_.store(info.isEncrypted());
   if (!info.isEncrypted()) {
@@ -188,9 +189,11 @@ void MacroKeyboard::onAuthenticationComplete(NimBLEConnInfo& info) {
   }
 }
 
-void MacroKeyboard::onSubscribe(NimBLECharacteristic*, NimBLEConnInfo& info,
+void BleKeyboard::onSubscribe(NimBLECharacteristic*, NimBLEConnInfo& info,
                                 uint16_t value) {
   if (connection_.load() != info.getConnHandle()) return;
   subscribed_.store((value & 1) != 0);
   generation_.fetch_add(1);
 }
+
+#endif  // FEATURE_BLE_HID

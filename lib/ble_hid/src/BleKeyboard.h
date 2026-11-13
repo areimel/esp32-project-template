@@ -17,7 +17,7 @@
 //
 // Call begin/update/send/releaseAll/setBatteryLevel/clearBonds from the Arduino
 // loop task. BLE callbacks only publish atomic connection state.
-class MacroKeyboard : private NimBLEServerCallbacks,
+class BleKeyboard : private NimBLEServerCallbacks,
                       private NimBLECharacteristicCallbacks {
  public:
   void begin(const char* name, uint16_t keystrokeMs);
