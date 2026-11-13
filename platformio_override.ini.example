@@ -1,0 +1,10 @@
+; Copy to platformio_override.ini (gitignored) for local, uncommitted settings.
+; It is pulled in by [platformio] extra_configs in platformio.ini.
+[env]
+; upload_port = /dev/ttyACM0
+; monitor_port = /dev/ttyACM0
+
+[env:esp32s3]
+; Use a different config or board row for one env:
+; custom_config = my-config.yaml
+; custom_board = esp32s3

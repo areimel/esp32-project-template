@@ -3,9 +3,6 @@
 .pioenvs/
 .piolibdeps/
 
-# Generated firmware configuration (config.yaml remains tracked)
-include/generated_config.h
-
 # Local Python environments and caches
 .venv/
 venv/

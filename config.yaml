@@ -1,96 +1,57 @@
-# Stick-S3 Macro Clicker configuration. Edit this file, then rebuild.
+# ESP32 Starter configuration. Edit this file, then rebuild.
 # Invalid entries fail the build with the path of the problem.
 #
-# WARNING: this file is embedded in firmware and published with releases.
-# Never put passwords, tokens, or other secrets in text macros.
+# WARNING: this file is embedded in the firmware and published with releases.
+# Never put passwords, tokens or other secrets here. OTA and dev WiFi
+# credentials go in the gitignored secrets.yaml (see secrets.example.yaml).
 #
-# Each profile has two buttons (main = A, secondary = B) and each button has
-# three gestures: single (tap), double, long (hold). An action is one of:
-#
-#   null                              unassigned
-#   "CMD+SHIFT+4"                     key combo: modifiers, then at most one key
-#   { keys: "CTRL+C", label: COPY }   same, with a display label (optional)
-#   { text: "hello", label: HI }      typed text (US ASCII; \n = ENTER, \t = TAB)
-#   { label: SHIP, sequence: [        ordered steps, any mix of:
-#       { text: "git push" },           text
-#       { keys: ENTER },                a combo (a bare "ENTER" string also works)
-#       { delay: 150 } ] }              a pause in milliseconds (1-10000)
+# Sections:
+#   project   name (1-32 chars), tagline and description for the UI and web installer
+#   ble       Bluetooth LE HID keyboard: enabled, name (1-29 UTF-8 bytes), keystroke_ms (5-100)
+#   wifi      enabled, hostname (RFC 1123 label, 1-32); provision via Improv Serial
+#   ota       enabled; only compiled in when secrets.yaml has ota_password
+#   display   enabled, brightness (1-255); ignored on boards without a display
+#   gestures  debounce_ms < double_click_ms < long_press_ms
+#   buttons   list, one entry per physical button (extras are dropped with a warning);
+#             each has single / double / long actions: null or a key combo such as
+#             "CMD+SHIFT+4" or { keys: "CTRL+C", label: COPY } (label 1-10 ASCII chars)
+#   schema    optional path to a .py module that adds project-specific sections
 #
 # Modifiers: CTRL, SHIFT, ALT (OPT), CMD (GUI, WIN, META, SUPER).
 # Keys: A-Z 0-9 F1-F24 ENTER ESC BACKSPACE TAB SPACE DELETE INSERT HOME END
 #   PAGE_UP PAGE_DOWN UP DOWN LEFT RIGHT CAPS_LOCK PRINT_SCREEN MINUS EQUAL
 #   LBRACKET RBRACKET BACKSLASH SEMICOLON QUOTE GRAVE COMMA PERIOD SLASH
-# Labels are 1-10 printable ASCII characters, shown uppercase on the screen.
-# A+B together opens the on-device profile picker. Up to 9 profiles.
 
-bluetooth:
-  name: Stick-S3 Macro
+project:
+  name: ESP32 Starter
+  tagline: A starting point for ESP32 firmware projects
+  description: BLE HID, WiFi provisioning, OTA and a status display on several boards.
+
+ble:
+  enabled: true
+  name: ESP32 Starter
+  keystroke_ms: 15 # time each key is held, and the gap after it
+
+wifi:
+  enabled: true
+  hostname: esp32-starter
+
+ota:
+  enabled: true
+
 display:
+  enabled: true
   brightness: 64
+
 gestures:
   debounce_ms: 25
   double_click_ms: 250
   long_press_ms: 650
-typing:
-  keystroke_ms: 15 # time each key is held, and the gap after it (5-100)
 
-profiles:
-  - name: CLAUDE
-    buttons:
-      main:
-        single:
-          label: REVIEW
-          sequence:
-            - text: "Review the current diff for bugs, regressions, and missing tests. Report findings by severity."
-            - keys: ENTER
-        double:
-          label: TESTS
-          sequence:
-            - text: "Run the test suite and fix any failures, then summarize what changed."
-            - keys: ENTER
-        long:
-          label: COMMIT
-          sequence:
-            - text: "Commit the changes with a clear, descriptive commit message."
-            - keys: ENTER
-      secondary:
-        single: { keys: ESC, label: INTERRUPT }
-        double: { keys: SHIFT+TAB, label: MODE }
-        long:
-          label: CLEAR
-          sequence:
-            - text: "/clear"
-            - keys: ENTER
-
-  - name: MAC EDIT
-    buttons:
-      main:
-        single: { keys: CMD+V, label: PASTE }
-        double: { keys: CMD+C, label: COPY }
-        long: { keys: CMD+X, label: CUT }
-      secondary:
-        single: { keys: CMD+Z, label: UNDO }
-        double: { keys: CMD+SHIFT+Z, label: REDO }
-        long: { keys: CMD+A, label: ALL }
-
-  - name: WIN EDIT
-    buttons:
-      main:
-        single: { keys: CTRL+V, label: PASTE }
-        double: { keys: CTRL+C, label: COPY }
-        long: { keys: CTRL+X, label: CUT }
-      secondary:
-        single: { keys: CTRL+Z, label: UNDO }
-        double: { keys: CTRL+Y, label: REDO }
-        long: { keys: CTRL+A, label: ALL }
-
-  - name: DECK
-    buttons:
-      main:
-        single: { keys: RIGHT, label: NEXT }
-        double: null
-        long: null
-      secondary:
-        single: { keys: LEFT, label: BACK }
-        double: null
-        long: { keys: ESC, label: EXIT }
+buttons:
+  - single: { keys: "CTRL+C", label: COPY }
+    double: { keys: "CTRL+V", label: PASTE }
+    long: { keys: "CTRL+X", label: CUT }
+  - single: { keys: ESC, label: ESCAPE }
+    double: null
+    long: { keys: "CTRL+Z", label: UNDO }
