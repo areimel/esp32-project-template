@@ -48,7 +48,7 @@ Use `.venv/bin/pio run -e sticks3` for a firmware build and
 are `.venv\Scripts\pio` and `.venv\Scripts\python`. The PlatformIO Python
 environment must contain PyYAML for the pre-build generator.
 
-Run `python -m unittest discover -s tests -v` (after a firmware build, because
+Run `python -m unittest discover -s scripts/tests -v` (after a firmware build, because
 packaging tests use PlatformIO's esptool) and the four host C++ tests listed in
 README.md (gesture, controller, player; BLE with `-Itests/ble` and
 `src/BleKeyboard.cpp`) when changing those behaviors. Windows has no native

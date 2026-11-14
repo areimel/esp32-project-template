@@ -10,7 +10,7 @@ Bluetooth status, and battery level.
 
 This project targets the **M5Stack Stick-S3 (ESP32-S3)**, not the older
 M5StickC/M5StickC Plus models. It uses PlatformIO, Arduino, M5Unified, and
-NimBLE. Source: <https://github.com/areimel/stick-s3-macro-clicker>.
+NimBLE. Source: <https://github.com/areimel/esp32-project-template>.
 
 > **SECURITY: never put secrets in macros.** `config.yaml` is compiled into the
 > firmware and is also embedded verbatim in the published firmware manifest
@@ -26,7 +26,7 @@ Its original behavior survives as the **DECK** profile.
 
 The Astro app in `web/` installs the latest official firmware over USB, with no
 PlatformIO installation needed by visitors. The live flasher is published on
-GitHub Pages at <https://areimel.github.io/stick-s3-macro-clicker/>, serving the
+GitHub Pages at <https://areimel.github.io/esp32-project-template/>, serving the
 latest stable release; the local preview instructions below work for development.
 
 1. Open the flasher in desktop Chrome or Edge and connect a **Stick-S3** with a
@@ -360,7 +360,7 @@ build first: the packaging tests use the pinned esptool image parser that
 PlatformIO installs with the build tools.
 
 ```sh
-.venv/bin/python -m unittest discover -s tests -v          # Windows: .venv\Scripts\python
+.venv/bin/python -m unittest discover -s scripts/tests -v          # Windows: .venv\Scripts\python
 ```
 
 The hardware-independent logic has four native C++ test programs: gesture,
@@ -480,7 +480,7 @@ npm --prefix web run dev
 ```
 
 On Windows, use `.venv\Scripts\python` and `.venv\Scripts\pio`. Open the localhost
-URL printed by Astro, including `/stick-s3-macro-clicker/`. Local development
+URL printed by Astro, including `/esp32-project-template/`. Local development
 firmware is labeled as a development version. Rebuild and repackage after editing
 `config.yaml` so the page and installed firmware agree. Generated firmware
 bundles, headers, dependency directories, and site output are ignored by Git.
@@ -512,7 +512,7 @@ workflow, not deployment.
 
 Before the first publication, set the repository's **Settings -> Pages -> Build
 and deployment -> Source** to **GitHub Actions**. The site is built with
-`BASE_PATH=/stick-s3-macro-clicker/`.
+`BASE_PATH=/esp32-project-template/`.
 
 After reviewing and authorizing the changes for publication:
 
