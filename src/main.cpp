@@ -133,18 +133,21 @@ void setup() {
   display.splash(AppConfig::PROJECT_NAME, FIRMWARE_VERSION);
 #endif
 #if FEATURE_BLE_HID
-  // Hold all buttons at boot to clear bonds; applied after begin() (needs NimBLE up).
-  const bool clearBonds = holdAllButtonsAtBoot(kBondHoldMs, [](uint32_t remaining) {
-#if FEATURE_DISPLAY
-    display.holdProgress("BONDS", remaining, remaining == 0);
-#endif
-    (void)remaining;
-  });
+  // begin() first: clearing bonds needs NimBLE up. Holding all buttons at boot
+  // clears bonds before the screen says so.
   keyboard.begin(AppConfig::BLE_NAME, AppConfig::KEYSTROKE_MS);
-  if (clearBonds) {
-    keyboard.clearBonds();
-    LOG_I("Bluetooth bonds cleared; forget the device on the host and re-pair");
-  }
+  holdAllButtonsAtBoot(
+      kBondHoldMs,
+      [](uint32_t remaining) {
+#if FEATURE_DISPLAY
+        display.holdProgress("BONDS", remaining, remaining == 0);
+#endif
+        (void)remaining;
+      },
+      [] {
+        keyboard.clearBonds();
+        LOG_I("Bluetooth bonds cleared; forget the device on the host and re-pair");
+      });
 #endif
 #if FEATURE_WIFI
   net::beginWifi(AppConfig::WIFI_HOSTNAME, AppConfig::DEV_WIFI_SSID, AppConfig::DEV_WIFI_PASSWORD);
