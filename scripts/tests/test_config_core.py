@@ -7,7 +7,7 @@ import yaml
 
 from support import make_ctx, default_config
 from config.core import ConfigError, UniqueKeyLoader, cstr, fields, integer, load_secrets, write_if_changed
-from generate_config import render
+from generate_config import generate, render
 
 
 class CoreTests(unittest.TestCase):
@@ -75,6 +75,24 @@ class CoreTests(unittest.TestCase):
                 load_secrets(path)
             self.assertIn("secrets.yaml", str(caught.exception))
             self.assertIn("malformed YAML", str(caught.exception))
+
+    def test_generate_error_names_file_once(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "config.yaml"
+            path.write_text("name: [unclosed\n", encoding="utf-8")
+            with self.assertRaises(ConfigError) as caught:
+                generate(path, Path(tmp) / "out.h", make_ctx())
+            self.assertEqual(str(caught.exception).count(str(path)), 1)
+            self.assertIn("malformed YAML", str(caught.exception))
+
+    def test_non_utf8_config_is_a_config_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "config.yaml"
+            path.write_bytes(b"name: \xff\xfe\n")
+            with self.assertRaises(ConfigError) as caught:
+                generate(path, Path(tmp) / "out.h", make_ctx())
+            self.assertIn("UTF-8", str(caught.exception))
+            self.assertEqual(str(caught.exception).count(str(path)), 1)
 
     def test_schema_hook(self):
         with tempfile.TemporaryDirectory() as tmp:

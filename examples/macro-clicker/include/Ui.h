@@ -4,6 +4,10 @@
 #include "Display.h"
 #include "Macro.h"
 
+#if !FEATURE_DISPLAY
+#error "The macro clicker needs display.enabled on a board with a display"
+#endif
+
 enum class LinkState : uint8_t { SEARCHING, HANDSHAKE, SECURE };
 enum class Screen : uint8_t { HOME, PICKER, TRANSMIT };
 

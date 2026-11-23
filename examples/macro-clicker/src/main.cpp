@@ -150,12 +150,13 @@ void setup() {
   display.splash(PROJECT_NAME, FIRMWARE_VERSION);
   // Only enter this maintenance action when both buttons are held at boot. No
   // macro input is processed until they are released.
-  if (holdAllButtonsAtBoot(kBondHoldMs, [](uint32_t remaining) {
-        display.holdProgress("BLUETOOTH", remaining, remaining == 0);
-      })) {
-    keyboard.clearBonds();
-    LOG_I("Bluetooth bonds cleared by startup A+B hold");
-  }
+  holdAllButtonsAtBoot(
+      kBondHoldMs,
+      [](uint32_t remaining) { display.holdProgress("BLUETOOTH", remaining, remaining == 0); },
+      [] {
+        keyboard.clearBonds();
+        LOG_I("Bluetooth bonds cleared by startup A+B hold");
+      });
   const uint8_t profile = store.load(PROFILE_COUNT);
   LOG_I("Active profile %u: %s", profile + 1, PROFILES[profile].name);
   board::update();

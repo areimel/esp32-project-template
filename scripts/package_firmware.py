@@ -114,15 +114,31 @@ def _remove(path):
         path.unlink()
 
 
+def _stale_boards(output, names):
+    """Board directories the previous index.json listed that the new run drops."""
+    try:
+        old = json.loads((output / "index.json").read_text(encoding="utf-8"))
+        dirs = {b["manifest"].split("/")[0] for b in old["boards"]}
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return []
+    return sorted(d for d in dirs if d not in names and d not in ("", ".", "..")
+                  and "\\" not in d and (output / d).is_dir())
+
+
 def publish(stage, output, names):
     """Swap the packager-owned `names` from `stage` into `output`, restoring on failure.
 
-    Unrelated files in `output` are never touched. Old copies are deleted last.
+    Board directories listed by the previous index.json but absent from `names`
+    are removed too. Other unrelated files in `output` are never touched. Old
+    copies are deleted last.
     """
     output.mkdir(parents=True, exist_ok=True)
     backup = Path(tempfile.mkdtemp(prefix=".firmware-old-", dir=output.parent))
     aside, placed = [], []
     try:
+        for name in _stale_boards(output, names):
+            move(output / name, backup / name)
+            aside.append(name)
         for name in names:
             if (output / name).exists():
                 move(output / name, backup / name)

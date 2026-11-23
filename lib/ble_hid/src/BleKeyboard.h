@@ -18,7 +18,7 @@
 // Call begin/update/send/releaseAll/setBatteryLevel/clearBonds from the Arduino
 // loop task. BLE callbacks only publish atomic connection state.
 class BleKeyboard : private NimBLEServerCallbacks,
-                      private NimBLECharacteristicCallbacks {
+                    private NimBLECharacteristicCallbacks {
  public:
   void begin(const char* name, uint16_t keystrokeMs);
   void update(uint32_t now);
@@ -32,8 +32,8 @@ class BleKeyboard : private NimBLEServerCallbacks,
   bool connected() const;
   bool ready() const;
   // Changes on connect, disconnect, (re)subscribe, bond clearing, or a failed
-  // encryption. A
-  // macro in progress must abort when it changes: a dropped stroke is never resent.
+  // encryption. A macro in progress must abort when it changes: a dropped
+  // stroke is never resent.
   uint32_t linkGeneration() const { return generation_.load(); }
   void setBatteryLevel(uint8_t level);
   void clearBonds();

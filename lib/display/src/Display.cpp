@@ -1,7 +1,9 @@
 #include "Display.h"
 #if FEATURE_DISPLAY
 #include <Arduino.h>
+#include <stdio.h>
 #include <string.h>
+#include "Log.h"
 #include "Draw.h"
 #include "Theme.h"
 
@@ -45,7 +47,10 @@ void Display::begin(M5GFX& gfx, uint8_t brightness) {
   gfx.setBrightness(brightness);
   canvas_.setPsram(true);
   canvas_.setColorDepth(16);
-  canvas_.createSprite(W, H);
+  if (!canvas_.createSprite(W, H)) {
+    canvas_.setPsram(false);  // board without PSRAM: fall back to internal RAM
+    if (!canvas_.createSprite(W, H)) LOG_E("display: cannot allocate %dx%d canvas", W, H);
+  }
   canvas_.fillScreen(BG);
   push();
 }
