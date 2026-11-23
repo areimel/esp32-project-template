@@ -1,6 +1,9 @@
 // Temporary placeholder while the firmware modules move into lib/ (replaced in a later task).
 #include <Arduino.h>
 #include "Board.h"
+#if FEATURE_DISPLAY
+#include "Display.h"  // temporary: forces lib/display to build until Task 6 wires it in
+#endif
 #include "Every.h"
 #include "Log.h"
 #include "generated_config.h"
