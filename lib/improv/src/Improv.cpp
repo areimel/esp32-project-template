@@ -17,12 +17,13 @@ bool ImprovParser::feed(uint8_t b) { return consume(b); }
 
 void ImprovParser::resync() {
   uint8_t tmp[sizeof raw_];
-  const uint8_t m = static_cast<uint8_t>(n_ - 1);
+  if (n_ < 1 || n_ > sizeof raw_) n_ = 1;  // defensive; cannot happen
+  const size_t m = n_ - 1u;
   memcpy(tmp, raw_ + 1, m);
   stage_ = Header;
   n_ = 0;
   // The replayed bytes hold no complete frame, so this cannot succeed or recurse deeply.
-  for (uint8_t i = 0; i < m; ++i) consume(tmp[i]);
+  for (size_t i = 0; i < m; ++i) consume(tmp[i]);
 }
 
 bool ImprovParser::consume(uint8_t b) {
@@ -34,6 +35,11 @@ bool ImprovParser::consume(uint8_t b) {
       n_ = 0;
       if (b == static_cast<uint8_t>(kHeader[0])) raw_[n_++] = b;
     }
+    return false;
+  }
+  if (n_ >= sizeof raw_) {  // unreachable by construction (max frame is 265 bytes); never write out of bounds
+    n_ = 0;
+    stage_ = Header;
     return false;
   }
   raw_[n_++] = b;
@@ -67,7 +73,10 @@ bool ImprovParser::consume(uint8_t b) {
       break;
   }
   // Data/Checksum bytes of a frame that did not complete. A full header inside them means the frame was
-  // cut short: restart there. A bad checksum abandons the frame and replays its tail for a partial header.
+  // cut short: restart there. Trade-off (deliberate, pinned by a test): a correctly checksummed frame whose
+  // payload contains "IMPROV\x01" is dropped too. That is what recovers a truncated frame without waiting
+  // for filler bytes, and 0x01 after "IMPROV" cannot occur in a typed SSID or password.
+  // A bad checksum abandons the frame and replays its tail for a partial header.
   if (n_ > 7 && memcmp(raw_ + n_ - 7, kHeader, 6) == 0 && raw_[n_ - 1] == kVersion) {
     memmove(raw_, raw_ + n_ - 7, 7);
     n_ = 7;

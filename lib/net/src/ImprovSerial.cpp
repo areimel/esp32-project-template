@@ -84,10 +84,20 @@ void finishProvisioning(bool ok) {
     return;
   }
   WiFi.disconnect();
-  esp_wifi_set_config(WIFI_IF_STA, &previous);  // still RAM storage: flash was never touched
+  // Still RAM storage here, so flash was never touched. With nothing to restore (first-time setup) or a
+  // rejected restore, leave an empty config so Wifi.cpp reports NoCredentials instead of retrying the
+  // failed credentials (stored flash credentials, if any, come back on reboot).
+  bool restored = previous.sta.ssid[0] != 0 && esp_wifi_set_config(WIFI_IF_STA, &previous) == ESP_OK;
+  if (!restored && previous.sta.ssid[0] != 0) LOG_E("improv: restoring previous credentials failed");
+  if (!restored) {
+    wifi_config_t empty;
+    memset(&empty, 0, sizeof empty);
+    if (esp_wifi_set_config(WIFI_IF_STA, &empty) != ESP_OK) LOG_E("improv: clearing failed credentials failed");
+  }
   esp_wifi_set_storage(WIFI_STORAGE_FLASH);
   WiFi.persistent(true);
-  LOG_I("improv: connect failed, previous credentials restored");
+  if (restored) LOG_I("improv: connect failed, previous credentials restored");
+  else LOG_I("improv: connect failed");
   sendError(ImprovError::UnableToConnect);
   sendState(ImprovState::Authorized);
 }

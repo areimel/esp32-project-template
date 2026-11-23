@@ -101,6 +101,40 @@ void test_header_straddling_bad_checksum() {
   TEST_ASSERT_EQUAL(8, p.data()[0]);
 }
 
+void test_max_payload_roundtrip() {
+  uint8_t d[255], f[300];
+  for (int i = 0; i < 255; ++i) d[i] = (uint8_t)(i * 7 + 3);
+  d[10] = 0;  // avoid accidental header bytes; content is otherwise arbitrary
+  size_t n = improvFrame(ImprovType::Rpc, d, 255, f, sizeof f);
+  TEST_ASSERT_EQUAL(265, n);
+  ImprovParser p;
+  TEST_ASSERT_EQUAL(1, feedAll(p, f, n));
+  TEST_ASSERT_EQUAL(255, p.length());
+  TEST_ASSERT_EQUAL_MEMORY(d, p.data(), 255);
+}
+
+void test_max_payload_bad_checksum_then_valid() {
+  uint8_t d[255], f[300];
+  for (int i = 0; i < 255; ++i) d[i] = (uint8_t)(i * 5 + 1);
+  size_t n = improvFrame(ImprovType::Rpc, d, 255, f, sizeof f);
+  f[n - 1] ^= 0x55;
+  ImprovParser p;
+  TEST_ASSERT_EQUAL(0, feedAll(p, f, n));
+  std::vector<uint8_t> good = goodFrame(9);
+  TEST_ASSERT_EQUAL(1, feedAll(p, good.data(), good.size()));
+  TEST_ASSERT_EQUAL(1, p.length());
+  TEST_ASSERT_EQUAL(9, p.data()[0]);
+}
+
+void test_payload_containing_header_is_dropped() {
+  // Documented trade-off: a correctly checksummed frame whose payload holds "IMPROV\x01" is cut short.
+  const uint8_t d[] = {'I', 'M', 'P', 'R', 'O', 'V', 1, 'x'};
+  uint8_t f[32];
+  size_t n = improvFrame(ImprovType::Rpc, d, sizeof d, f, sizeof f);
+  ImprovParser p;
+  TEST_ASSERT_EQUAL(0, feedAll(p, f, n));
+}
+
 void test_wifi_settings_empty_ssid() {
   const uint8_t rpc[] = {1, 2, 0, 0};
   char ssid[33], pass[65];
@@ -147,6 +181,9 @@ int main() {
   RUN_TEST(test_short_frame_then_valid_frame);
   RUN_TEST(test_valid_frame_inside_bad_checksum_frame);
   RUN_TEST(test_header_straddling_bad_checksum);
+  RUN_TEST(test_max_payload_roundtrip);
+  RUN_TEST(test_max_payload_bad_checksum_then_valid);
+  RUN_TEST(test_payload_containing_header_is_dropped);
   RUN_TEST(test_wifi_settings_empty_ssid);
   RUN_TEST(test_wifi_settings);
   RUN_TEST(test_rpc_result);

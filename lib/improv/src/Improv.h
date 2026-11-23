@@ -24,7 +24,8 @@ class ImprovParser {
   bool consume(uint8_t b);
   void resync();  // abandon the current frame, replaying its bytes after the first
   Stage stage_ = Header;
-  uint8_t n_ = 0, type_ = 0, len_ = 0;  // n_ = bytes of the current frame held in raw_
+  uint16_t n_ = 0;  // bytes of the current frame in raw_ (up to 265; uint8_t would wrap)
+  uint8_t type_ = 0, len_ = 0;
   uint8_t raw_[266];                    // header 6 + version + type + len + data 255 + checksum
   uint8_t data_[255];                   // payload of the last completed frame
 };
