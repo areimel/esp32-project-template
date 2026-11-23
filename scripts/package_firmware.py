@@ -52,7 +52,18 @@ def resolve_boot_app0(core):
     raise ValueError("boot_app0.bin not found in the PlatformIO Arduino framework package")
 
 
-def board_build(project, env, opts, boards, version, core):
+def secret_reasons(secrets, features):
+    """Why this build's firmware.bin holds plaintext secrets (key names only, never values)."""
+    reasons = []
+    keys = sorted(k for k, v in secrets.items() if v)
+    if keys:
+        reasons.append(f"secrets.yaml sets {', '.join(keys)}")
+    if features.get("FEATURE_OTA"):
+        reasons.append("OTA is compiled in (its password is in the image)")
+    return reasons
+
+
+def board_build(project, env, opts, boards, version, core, allow_secrets=False):
     """Validate one env's build; returns (board record, config, config bytes, {file: bytes})."""
     board_id = opts.get("custom_board", env)
     if board_id not in boards:
@@ -67,6 +78,14 @@ def board_build(project, env, opts, boards, version, core):
         expected, features = render(config, ctx, config_path.parent)
     except ConfigError as exc:
         raise ValueError(f"{env}: invalid config: {exc}") from exc
+    reasons = secret_reasons(ctx.secrets, features)
+    if reasons and not allow_secrets:
+        raise ValueError(f"{env}: refusing to package a firmware image that embeds secrets "
+                         f"({'; '.join(reasons)}). Move secrets.yaml aside and rebuild without secrets.yaml, "
+                         "or pass --allow-secrets for a deliberate local package that is never published")
+    if reasons:
+        print(f"WARNING: {env}: packaging WITH SECRETS ({'; '.join(reasons)}). firmware.bin holds them in "
+              "plaintext: do not publish, commit or share this output.", file=sys.stderr)
     build = project / ".pio/build" / env
     header = build / "generated/generated_config.h"
     if not header.is_file() or header.read_text(encoding="utf-8") != expected:
@@ -157,7 +176,7 @@ def publish(stage, output, names):
 
 
 def package(project, output, version=None, commit=None, envs=None, platformio_dir=None,
-            env_options=None):
+            env_options=None, allow_secrets=False):
     project, output = Path(project), Path(output)
     boards = load_boards(project / "boards/boards.yaml")
     options = env_options if env_options is not None else pio_env_options(project)
@@ -177,7 +196,8 @@ def package(project, output, version=None, commit=None, envs=None, platformio_di
     if len(set(envs)) != len(envs) or duplicates:
         raise ValueError(f"Duplicate board in one run: envs {envs}, board ids {duplicates or sorted(set(envs))}")
     core = Path(platformio_dir or os.environ.get("PLATFORMIO_CORE_DIR", Path.home() / ".platformio"))
-    results = [board_build(project, env, options.get(env, {}), boards, version, core) for env in envs]
+    results = [board_build(project, env, options.get(env, {}), boards, version, core, allow_secrets)
+               for env in envs]
     config, config_bytes = results[0][1], results[0][2]
     if any(sha256(r[2]) != sha256(config_bytes) for r in results):
         raise ValueError("Boards use different config files; index.json holds one config")
@@ -211,9 +231,12 @@ def main():
     parser.add_argument("--version")
     parser.add_argument("--commit")
     parser.add_argument("--env", action="append", dest="envs")
+    parser.add_argument("--allow-secrets", action="store_true",
+                        help="package even though secrets.yaml or OTA put secrets in the image (local use only)")
     args = parser.parse_args()
     try:
-        index = package(args.project, args.output, args.version, args.commit, args.envs)
+        index = package(args.project, args.output, args.version, args.commit, args.envs,
+                        allow_secrets=args.allow_secrets)
     except (OSError, ValueError, subprocess.CalledProcessError) as exc:
         parser.exit(1, f"Packaging error: {exc}\n")
     for board in index["boards"]:
