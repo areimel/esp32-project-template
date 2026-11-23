@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from config.boards import firmware_version, load_boards  # noqa: E402
 from config.core import ConfigError, Context, load_secrets, load_yaml  # noqa: E402
+from config.sections.buttons import button_count  # noqa: E402
 from firmware_images import (  # noqa: E402
     BOOT_APP0_SIZE, PARTITIONS_OFFSET, bootloader_offset, check_parts, flash_layout,
     image_parser, parse_partitions, validate_image,
@@ -114,7 +115,7 @@ def board_build(project, env, opts, boards, version, core, allow_secrets=False):
                 "builds": [{"chipFamily": chip,
                             "parts": [{"path": n, "offset": offsets[n]} for n in offsets]}]}
     record = {"id": board_id, "label": board["label"], "chip": chip,
-              "buttons": board.get("buttons", len(board.get("button_pins", []))),
+              "buttons": button_count(board),
               "display": bool(board.get("display")), "battery": bool(board.get("battery")),
               "features": sorted(k[8:].lower() for k, on in features.items() if on),
               "manifest": f"{env}/manifest.json",

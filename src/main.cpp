@@ -159,6 +159,7 @@ void setup() {
 #endif
   board::update();
   resetGestures(millis());
+  batteryTimer.due(millis());  // first reading happens here, the next one 30 s later
   readBattery();
 }
 

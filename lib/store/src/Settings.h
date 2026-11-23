@@ -1,8 +1,8 @@
 #pragma once
 #include <stdint.h>
 
-// Tiny NVS-backed settings store. Each call opens the namespace read-write
-// and closes it again, so no handle is held between calls.
+// Tiny NVS-backed settings store. Each call opens the namespace (read-only for
+// reads, read-write for writes) and closes it again, so no handle is held.
 class Settings {
  public:
   explicit Settings(const char* ns) : ns_(ns) {}

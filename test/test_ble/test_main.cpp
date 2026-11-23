@@ -36,7 +36,7 @@ void test_security_descriptor_and_pacing() {  // // security setup, descriptor, 
   Fixture f;
   TEST_ASSERT_TRUE(NimBLEDevice::bonding && NimBLEDevice::secureConnections);
   TEST_ASSERT_TRUE(NimBLEDevice::server.autoAdvertise && NimBLEDevice::advertising.started);
-  TEST_ASSERT_TRUE(NimBLEHIDDevice::last->manufacturer == "Stick-S3 Macro");
+  TEST_ASSERT_TRUE(NimBLEHIDDevice::last->manufacturer == "ESP32 Starter Template");
   const std::vector<uint8_t>& map = NimBLEHIDDevice::last->reportMap;
   const std::vector<uint8_t> keyArray = {0x15, 0x00, 0x26, 0xE7, 0x00,
                                          0x05, 0x07, 0x19, 0x00, 0x29, 0xE7, 0x81, 0x00, 0xC0};

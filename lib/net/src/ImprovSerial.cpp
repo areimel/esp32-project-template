@@ -11,7 +11,7 @@
 
 // Provisioning is a non-blocking state machine advanced by updateImprov():
 //   WifiSettings RPC -> Provisioning sent, attempt started (RAM-only credentials)
-//   each poll: connected -> persist credentials, Provisioned + URL result
+//   each poll: connected -> persist credentials, Provisioned + empty result (no web server to visit)
 //              15 s elapsed -> restore the previous credentials and storage mode, UnableToConnect,
 //                              back to Authorized
 // Nothing is written to flash until the connection succeeds, so a failed attempt never overwrites
@@ -42,12 +42,8 @@ void sendResult(ImprovCommand c, const char* const* strings, uint8_t count) {
   if (n) Serial.write(f, n);
 }
 
-void sendRedirect() {
-  char url[32];
-  snprintf(url, sizeof url, "http://%s", WiFi.localIP().toString().c_str());
-  const char* strings[1] = {url};
-  sendResult(ImprovCommand::WifiSettings, strings, 1);
-}
+// No redirect URL: the device serves no web page, so the installer must not offer a "Visit device" link.
+void sendProvisionedResult() { sendResult(ImprovCommand::WifiSettings, nullptr, 0); }
 
 ImprovState currentState() {
   if (connecting) return ImprovState::Provisioning;
@@ -83,7 +79,7 @@ void finishProvisioning(bool ok) {
     if (esp_wifi_get_config(WIFI_IF_STA, &now) == ESP_OK) esp_wifi_set_config(WIFI_IF_STA, &now);  // persist now
     LOG_I("improv: connected, credentials saved");
     sendState(ImprovState::Provisioned);
-    sendRedirect();
+    sendProvisionedResult();
     return;
   }
   WiFi.disconnect();
@@ -122,7 +118,7 @@ void handleRpc(const uint8_t* d, uint8_t len) {
   switch (static_cast<ImprovCommand>(d[0])) {
     case ImprovCommand::GetState:
       sendState(currentState());
-      if (currentState() == ImprovState::Provisioned) sendRedirect();
+      if (currentState() == ImprovState::Provisioned) sendProvisionedResult();
       break;
     case ImprovCommand::GetInfo:
       sendResult(ImprovCommand::GetInfo, info, 4);
