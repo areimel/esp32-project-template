@@ -12,7 +12,7 @@ from support import ROOT, BOARDS, default_config  # noqa: F401 (sets sys.path)
 import yaml
 from config.core import Context, load_secrets
 from generate_config import render
-from package_firmware import default_envs, package
+from package_firmware import package
 
 CHIP_IDS = {"ESP32": 0, "ESP32-S3": 9, "ESP32-C3": 5}
 DEFAULT_PARTS = [("nvs", 1, 2, 0x9000, 0x5000), ("otadata", 1, 0, 0xE000, 0x2000),
@@ -283,10 +283,6 @@ class PackagingTests(unittest.TestCase):
         path.write_bytes(path.read_bytes() + b"\xff" * 0x8100)
         with self.assertRaisesRegex(ValueError, "overlaps NVS"):
             self.package()
-
-    def test_default_envs_exclude_aliases_and_native(self):
-        options = {**self.options, "native": {}, "esp32s3": {"custom_board": "esp32s3"}}
-        self.assertEqual(default_envs(options, BOARDS), ["sticks3", "esp32", "esp32c3", "esp32s3"])
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 name: Set up firmware tooling
-description: Python, PlatformIO tools and cache, and optionally Node for the web flasher.
+description: Python, PlatformIO tools and cache, and optionally Node for the web installer.
 
 inputs:
   node:

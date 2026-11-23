@@ -32,15 +32,14 @@ web/node_modules/
 web/.astro/
 web/dist/
 web/public/firmware/
-web/test-results/
-web/playwright-report/
 
 # Local secrets and overrides (never commit)
 secrets.yaml
 platformio_override.ini
 
-# Scratch/demo media
-brag-output/
-
 # Subagent-driven-development scratch (ledger, briefs, review packages)
 .superpowers/
+
+# Local tool state
+.claude/
+.playwright-mcp/

@@ -5,7 +5,6 @@ from config.core import ConfigError, boolean, cstr, fields
 
 KEY, REQUIRED = "wifi", False
 DEFAULT = {"enabled": False, "hostname": "esp32-device"}
-INCLUDES = []
 LABEL = re.compile(r"^[A-Za-z0-9]([A-Za-z0-9-]{0,30}[A-Za-z0-9])?$")  # RFC 1123 label, 1-32
 
 

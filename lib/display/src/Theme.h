@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-// Display palette, mirroring the web flasher tokens (web/src/styles/theme.css).
+// Display palette, mirroring the web flasher tokens (web/src/styles/tokens.css).
 // Colors are converted from 8-bit RGB to RGB565 at compile time.
 namespace Theme {
 constexpr uint16_t rgb565(uint8_t r, uint8_t g, uint8_t b) {
