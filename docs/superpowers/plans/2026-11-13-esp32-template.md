@@ -390,13 +390,13 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 - Consumes: `keys.parse_combo` and `keys.ASCII` from Task 1, the section contract, `Settings`, `BleKeyboard`, `Display` and `board::*`.
 - Produces: the `profiles` section (`KEY = "profiles"`, `INCLUDES = ["Macro.h"]`), whose header output is byte-identical to today's profile arrays.
 
-- [ ] **Step 1: Port the tests.** Port the controller, player and profile-schema tests with every existing assertion. Run `.venv/bin/pio test -e native -f "test_macro_*"` and `python -m unittest scripts.tests.test_macro_schema`. Both fail until the files move.
-- [ ] **Step 2: Move the code.**
+- [x] **Step 1: Port the tests.** Port the controller, player and profile-schema tests with every existing assertion. Run `.venv/bin/pio test -e native -f "test_macro_*"` and `python -m unittest scripts.tests.test_macro_schema`. Both fail until the files move.
+- [x] **Step 2: Move the code.**
   - Move the code and rename it to `BleKeyboard`. `ProfileStore` wraps `Settings("macro")` with today's clamp.
   - `Ui.cpp` uses the `Display` chrome and keeps its Home, Picker and Transmit screens.
   - `examples/macro-clicker/config.yaml` is today's config.yaml in the new section format, with `wifi` and `ota` disabled and `schema: config_schema.py`.
-- [ ] **Step 3: Run the tests and see them pass.** Rerun both commands from Step 1. All tests pass.
-- [ ] **Step 4: Build the macro env.** Run `.venv/bin/pio run -e sticks3-macro`. It reports SUCCESS. Commit 6: "Move macro clicker into examples/macro-clicker".
+- [x] **Step 3: Run the tests and see them pass.** Rerun both commands from Step 1. All tests pass.
+- [x] **Step 4: Build the macro env.** Run `.venv/bin/pio run -e sticks3-macro`. It reports SUCCESS. Commit 6: "Move macro clicker into examples/macro-clicker".
 
 ### Task 8: Board-driven packaging
 
@@ -532,7 +532,7 @@ This task runs in parallel with Task 9 and owns `web/src/styles/`.
   - `TODO.md`, as the remaining physical checks.
 - Move: the macro-specific README sections into `examples/macro-clicker/README.md`.
 
-- [ ] **Step 1: Check the docs against the code.**
+- [x] **Step 1: Check the docs against the code.**
   - Every config key documented in `configuration.md` exists in `scripts/config/sections/*.py`.
   - The validation limits match the code.
   - Every command in the docs has been run once in this session.
