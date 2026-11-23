@@ -289,14 +289,14 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 - Consumes: the `FEATURE_BLE_HID` guard.
 - Produces: `Gesture` (unchanged), `BleKeyboard` and `Settings`.
 
-- [ ] **Step 1: Convert the tests.**
+- [x] **Step 1: Convert the tests.**
   - Each top-level `{ ... }` block in `main()` becomes a named Unity test: `test_tap_without_double`, `test_double_window` and so on, named after what each block asserts.
   - `assert(x)` becomes `TEST_ASSERT_TRUE(x)`.
   - Add `setUp`, `tearDown` and `main` with `UNITY_BEGIN`, `RUN_TEST` and `UNITY_END`.
   - Every existing assertion stays.
-- [ ] **Step 2: Run the tests.** Run `.venv/bin/pio test -e native -f test_gesture -f test_ble`. All tests pass, with the same case count as the old asserts. `test_ble` compiles `BleKeyboard.cpp` against `test/stubs`, with `FEATURE_BLE_HID=1` defined in `[env:native]` build_flags.
-- [ ] **Step 3: Implement `Settings`.** Use `Preferences` with namespace `ns`, opened read-write for each call. `putU8` reads first and returns true without writing when the value is unchanged.
-- [ ] **Step 4: Build `sticks3` and `esp32c3`.** Run `.venv/bin/pio run -e sticks3 -e esp32c3`. Both report SUCCESS. Commit 3: "Input, settings and BLE HID modules with native tests".
+- [x] **Step 2: Run the tests.** Run `.venv/bin/pio test -e native -f test_gesture -f test_ble`. All tests pass, with the same case count as the old asserts. `test_ble` compiles `BleKeyboard.cpp` against `test/stubs`, with `FEATURE_BLE_HID=1` defined in `[env:native]` build_flags.
+- [x] **Step 3: Implement `Settings`.** Use `Preferences` with namespace `ns`, opened read-write for each call. `putU8` reads first and returns true without writing when the value is unchanged.
+- [x] **Step 4: Build `sticks3` and `esp32c3`.** Run `.venv/bin/pio run -e sticks3 -e esp32c3`. Both report SUCCESS. Commit 3: "Input, settings and BLE HID modules with native tests".
 
 ### Task 4: lib/improv and lib/net (WiFi, Improv Serial, dev OTA)
 
@@ -339,8 +339,8 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 - Consumes: `board::display()` and `FEATURE_DISPLAY`.
 - Produces: the `Display` class. Its `header`, `splash`, `holdProgress` and `fatal` drawing is extracted from today's `src/Ui.cpp`, which is the header and battery chrome, the boot screen and the bond-reset screen.
 
-- [ ] **Step 1: Implement `Display`.** Lift the drawing code verbatim where possible, without changing colors or layout. `Display.cpp` stays at or under 200 lines.
-- [ ] **Step 2: Build `sticks3`.** Run `.venv/bin/pio run -e sticks3`. It reports SUCCESS.
+- [x] **Step 1: Implement `Display`.** Lift the drawing code verbatim where possible, without changing colors or layout. `Display.cpp` stays at or under 200 lines.
+- [x] **Step 2: Build `sticks3`.** Run `.venv/bin/pio run -e sticks3`. It reports SUCCESS.
 
 ### Task 6: Minimal default app
 
@@ -519,7 +519,7 @@ This task runs in parallel with Task 9 and owns `web/src/styles/`.
     - deploys Pages.
   - Neither workflow contains a project name or env name literal.
 
-- [ ] **Step 1: Validate the workflows.** Run `python -c "import yaml,sys;[yaml.safe_load(open(f)) for f in sys.argv[1:]]" .github/workflows/*.yml .github/actions/setup/action.yml` and `bash scripts/check.sh`. Both exit 0. If `actionlint` is available, run it and expect 0 findings. Commit 10: "Reusable CI setup action and per-board build matrix".
+- [x] **Step 1: Validate the workflows.** Run `python -c "import yaml,sys;[yaml.safe_load(open(f)) for f in sys.argv[1:]]" .github/workflows/*.yml .github/actions/setup/action.yml` and `bash scripts/check.sh`. Both exit 0. If `actionlint` is available, run it and expect 0 findings. Commit 10: "Reusable CI setup action and per-board build matrix".
 
 ### Task 12: Docs and agent guide
 
