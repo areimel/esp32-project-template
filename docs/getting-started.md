@@ -58,8 +58,12 @@ Levels are set with `-DLOG_LEVEL=n` (0 off to 4 debug, default 3).
 | Single, double or long press on a button | Sends that button's key combo over BLE HID, if configured and the link is ready |
 | Hold every button at boot | Clears Bluetooth bonds: 3 s on 2-button boards, 5 s on 1-button boards |
 
-On boards with a display the hold timer starts after the splash (about
-700 ms), so keep the buttons held through it. After clearing,
+The hold must start within about 1 s of the boot-hold check; a boot without
+the hold continues after that second. On boards with a display the check runs
+after the splash (about 700 ms), so keep the buttons held through it. On the
+1-button GPIO boards (`esp32s3`, `esp32c3`, `esp32`) the button is BOOT, a
+strapping pin: holding it during reset enters ROM download mode instead of
+booting the app. Press BOOT right after reset, not during it. After clearing,
 forget the device in the host's Bluetooth settings and pair again. Changing
 the HID report descriptor requires the same forget-and-re-pair step.
 
@@ -89,7 +93,10 @@ Improv frames share the log port; other bytes are ignored.
 
 For development you can instead set `wifi_ssid` and `wifi_password` in
 `secrets.yaml` (copy `secrets.example.yaml`). They are used only when the device
-has no stored credentials; stored credentials always win.
+has no stored credentials; stored credentials always win. Dev credentials are
+kept in RAM only, so they never overwrite credentials saved by Improv. With
+neither, the device makes no connection attempt and waits for Improv. While
+credentials are configured but not connected, the app retries every 10 s.
 
 ## 7. Edit the config
 

@@ -28,7 +28,7 @@ optional module from always-on code without a guard.
 | `lib/core` | `Log.h` | `LOG_E/W/I/D(fmt, ...)` print `[E]`..`[D]` lines to `Serial`; `LOG_LEVEL` 0-4, default 3 |
 | `lib/core` | `Every.h` | `Every(periodMs)`; `due(now)` is true on the first call, then once per period; wrap-safe, never bursts |
 | `lib/board` | `Board.h` | `board::begin(brightness)`, `update()`, `buttonCount()`, `isPressed(i)`, `batteryPercent()` (-1 if none), `charging()`, `setStatusLed(on)`, and `display()` when `BOARD_HAS_DISPLAY` |
-| `lib/board` | `BootHold.h` | `holdAllButtonsAtBoot(holdMs, progress)`: true if every button is held for `holdMs` from boot |
+| `lib/board` | `BootHold.h` | `holdAllButtonsAtBoot(holdMs, progress, onHeld)`: true if every button is held for `holdMs`, with the hold starting within `kBootHoldGraceMs` (1000 ms) of the call |
 | `lib/input` | `Gesture.h` | `Gesture(debounce, doubleMs, longMs)`; `update(raw, now)` returns `NONE`, `SINGLE`, `DOUBLE` or `HOLD`; `setAssigned`, `reset`, `cancel`, `pressed`, `holdFired` |
 | `lib/store` | `Settings.h` | `Settings(ns)`; `getU8(key, def)`; `putU8(key, v)` skips the write when unchanged |
 | `lib/improv` | `Improv.h` | Improv Serial codec: `ImprovParser::feed`, `improvFrame`, `improvRpcResult`, `improvWifiSettings` |
@@ -38,14 +38,23 @@ Notes:
 - `board` selects `BoardM5.cpp` or `BoardGpio.cpp` from `BOARD_DRIVER_M5` or
   `BOARD_DRIVER_GPIO`. Neither waits for USB serial. The GPIO driver reads the
   `BOARD_BUTTON_PINS` list (active-low), the M5 driver uses M5Unified.
-- `holdAllButtonsAtBoot` calls `progress(remainingMs)` while held, then waits for
-  release for at most 5000 ms before continuing. The default app's hold times
-  are in [getting-started.md](getting-started.md#4-use-the-default-app).
+- `holdAllButtonsAtBoot` waits up to `kBootHoldGraceMs` (1000 ms) for every
+  button to be pressed, so a boot without a hold continues about 1 s later; a
+  board with no buttons returns at once. The grace window exists because the
+  GPIO boards' only button is a strapping pin (GPIO 0, or GPIO 9 on the C3):
+  held during reset it enters ROM download mode, so it is pressed right after
+  reset instead. While held it calls `progress(remainingMs)`. When the hold
+  completes, `onHeld()` runs first (the maintenance action), then `progress(0)`
+  draws the done screen, then it waits for release for at most 5000 ms before
+  continuing. The default app's hold times are in
+  [getting-started.md](getting-started.md#4-use-the-default-app).
 - `Gesture` is header-only with no Arduino includes. A press is always
   classified; whether it maps to an action is the caller's decision. After
   changing assignments or the link state, call `reset()` or `cancel()`.
-- `Settings` opens and closes the NVS namespace on every call. The default app
-  does not use it; the macro example persists the active profile with it.
+- `Settings` opens and closes the NVS namespace on every call: read-only for
+  `getU8` (a missing namespace returns `def` and is not created), read-write for
+  `putU8`. The default app does not use it; the macro example persists the
+  active profile with it.
 - `ImprovParser` ignores non-Improv bytes, resyncs after a bad checksum or a
   truncated frame, and has no Arduino dependency.
 
@@ -73,19 +82,24 @@ Declared in `Net.h`, namespace `net`:
 
 | Call | Behavior |
 |---|---|
-| `beginWifi(hostname, devSsid, devPass)` | Station mode; stored credentials win, dev credentials are used only when none are stored |
-| `updateWifi(now)` | Non-blocking; retries a lost connection every 10 s |
-| `wifiState()`, `ipAddress()` | `NoCredentials`, `Connecting` or `Connected`; `""` when not connected |
+| `beginWifi(hostname, devSsid, devPass)` | Station mode; stored credentials win, dev credentials are used only when none are stored and are kept in RAM (never written to flash); with neither, no connection is attempted |
+| `updateWifi(now)` | Non-blocking; while not connected and credentials are configured, retries every 10 s (the framework also auto-reconnects) |
+| `wifiState()`, `ipAddress()` | `NoCredentials` (no SSID in the STA config), `Connecting` or `Connected`; `""` when not connected |
 | `beginImprov(firmware, version, chip, deviceName)` | Registers the info reported over Improv and announces state |
 | `updateImprov()` | Drains `Serial`, answers Improv RPCs and provisions WiFi; call from `loop()` |
-| `beginOta(hostname, password)`, `updateOta()`, `otaActive()` | ArduinoOTA; `otaActive()` is true from start to end or error |
+| `beginOta(hostname, password, onStart = nullptr)`, `updateOta()` | ArduinoOTA. `updateOta()` runs a whole transfer inline; `onStart()` runs once as it begins. Success restarts the device; on failure `updateOta()` returns |
 
 Improv shares the log port, so log text and frames can interleave and
 non-Improv bytes are ignored. Provisioning is non-blocking: it is advanced only
 by `updateImprov()`, allows a connection attempt 15 s, persists the new
 credentials only after a successful connection, and restores the previous
-credentials on failure. While `otaActive()`, the default app releases keys and
-ignores buttons.
+credentials on failure. A successful provision answers with an RPC result that
+has no redirect URL, because the device serves no web page.
+
+The loop does not run during an OTA transfer. The default app's `onStart` hook
+releases any held key and draws the `OTA UPDATING` row once; button presses
+during the transfer are never read. If the transfer fails, the app resets its
+gesture state and carries on.
 
 ### `lib/display`: `Display` (`FEATURE_DISPLAY`)
 

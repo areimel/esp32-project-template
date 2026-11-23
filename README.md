@@ -6,8 +6,9 @@ WiFi with Improv provisioning, development OTA, display) are compiled in from
 that one file, and a static site installs the firmware from the browser with
 ESP Web Tools.
 
-Hardware behavior is not yet verified on any board. Compile success is the only
-claim made, and the remaining checks are listed in [TODO.md](TODO.md).
+Hardware behavior is almost entirely unverified. One boot of the default app
+has been observed on a Stick-S3 over USB serial (details in [TODO.md](TODO.md));
+everything else, on every board, is pending and listed there.
 
 ## Quick start
 
