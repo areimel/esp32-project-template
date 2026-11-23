@@ -77,13 +77,30 @@ const run = (dir: string) =>
 type Mutate = (index: any, dir: string) => void;
 
 /** Copy the fixture index and write matching part files into a temp dir. */
-function packaged(opts: { bytes?: number[]; mutate?: Mutate } = {}): string {
+function packaged(
+  opts: { bytes?: number[]; mutate?: Mutate; manifest?: ((m: any) => void) | null } = {},
+): string {
   const dir = mkdtempSync(join(tmpdir(), "fw-"));
   const index = fixtureJson();
   const good = Buffer.from([1, 2, 3, 4]);
   const written = Buffer.from(opts.bytes ?? [1, 2, 3, 4]);
   for (const board of index.boards) {
     mkdirSync(join(dir, board.id), { recursive: true });
+    const manifest = {
+      builds: [
+        {
+          chipFamily: board.chip,
+          parts: board.parts.map((p: any) => ({
+            path: p.path.slice(board.id.length + 1),
+            offset: p.offset,
+          })),
+        },
+      ],
+    };
+    if (opts.manifest !== null) {
+      opts.manifest?.(manifest);
+      writeFileSync(join(dir, board.manifest), JSON.stringify(manifest));
+    }
     for (const part of board.parts) {
       part.size = good.length;
       part.sha256 = createHash("sha256").update(good).digest("hex");
@@ -116,6 +133,60 @@ test("check-firmware fails on a size mismatch", () => {
   const r = run(packaged({ bytes: [1, 2, 3, 4, 5] }));
   assert.equal(r.status, 1);
   assert.match(r.stderr, /mismatch/i);
+});
+
+test("check-firmware fails when a board manifest is missing", () => {
+  const r = run(packaged({ manifest: null }));
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /manifest/i);
+});
+
+test("check-firmware fails when a board manifest is not JSON", () => {
+  const dir = packaged();
+  writeFileSync(join(dir, "sticks3/manifest.json"), "{nope");
+  const r = run(dir);
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /manifest/i);
+});
+
+test("check-firmware fails on a manifest offset that disagrees with the index", () => {
+  const r = run(packaged({ manifest: (m) => (m.builds[0].parts[1].offset = 1234) }));
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /offset/i);
+});
+
+test("check-firmware fails on a manifest part missing from the index", () => {
+  const r = run(packaged({ manifest: (m) => (m.builds[0].parts[1].path = "extra.bin") }));
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /extra\.bin/);
+});
+
+test("check-firmware fails on a manifest chipFamily that is not the board chip", () => {
+  const r = run(packaged({ manifest: (m) => (m.builds[0].chipFamily = "ESP32-C3") }));
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /chip/i);
+});
+
+test("readIndex rethrows read errors other than a missing file", () => {
+  const dir = mkdtempSync(join(tmpdir(), "fw-bad-"));
+  mkdirSync(join(dir, "index.json"));
+  assert.throws(() => readIndex(dir), /EISDIR/);
+});
+
+test("validateIndex type-checks capabilities and rejects negative size or offset", () => {
+  const cases: Array<[string, (i: any) => void]> = [
+    ["display not boolean", (i) => (i.boards[0].display = "yes")],
+    ["battery not boolean", (i) => (i.boards[0].battery = 1)],
+    ["features not array", (i) => (i.boards[0].features = "wifi")],
+    ["features not strings", (i) => (i.boards[0].features = [1])],
+    ["negative size", (i) => (i.boards[0].parts[0].size = -1)],
+    ["negative offset", (i) => (i.boards[0].parts[0].offset = -4)],
+  ];
+  for (const [name, mutate] of cases) {
+    const index = fixtureJson();
+    mutate(index);
+    assert.throws(() => validateIndex(index), /Invalid firmware index/, name);
+  }
 });
 
 test("check-firmware rejects a traversal path", () => {

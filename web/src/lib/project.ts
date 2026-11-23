@@ -30,6 +30,9 @@ export interface FirmwareIndex {
   boards: Board[];
 }
 
+/** Packaged firmware directory; builds run from web/, so this is web/public/firmware. */
+export const FIRMWARE_DIR = resolve(process.cwd(), "public/firmware");
+
 const HASH = /^[a-f0-9]{64}$/;
 const COMMIT = /^[a-f0-9]{40}$/;
 
@@ -68,6 +71,10 @@ export function validateIndex(value: unknown): FirmwareIndex {
       fail("board needs string id, label and chip");
     if (!Number.isInteger(b.buttons) || b.buttons < 0)
       fail(`board ${b.id} buttons must be an integer >= 0`);
+    if (typeof b.display !== "boolean" || typeof b.battery !== "boolean")
+      fail(`board ${b.id} display and battery must be booleans`);
+    if (!Array.isArray(b.features) || !b.features.every((f) => typeof f === "string"))
+      fail(`board ${b.id} features must be a string array`);
     if (!safeRelPath(b.manifest)) fail(`board ${b.id} has an unsafe manifest path`);
     if (!Array.isArray(b.parts) || b.parts.length === 0)
       fail(`board ${b.id} has no parts`);
@@ -75,7 +82,9 @@ export function validateIndex(value: unknown): FirmwareIndex {
       if (
         !safeRelPath(part?.path) ||
         !Number.isSafeInteger(part.size) ||
+        part.size < 0 ||
         !Number.isSafeInteger(part.offset) ||
+        part.offset < 0 ||
         !HASH.test(part.sha256)
       )
         fail(`bad part in board ${b.id}`);
@@ -93,14 +102,13 @@ export function withBase(
 }
 
 /** Read `<dir>/index.json`; null when there is no packaged release. */
-export function readIndex(
-  dir: string = resolve(process.cwd(), "public/firmware"),
-): FirmwareIndex | null {
+export function readIndex(dir: string = FIRMWARE_DIR): FirmwareIndex | null {
   let text: string;
   try {
     text = readFileSync(resolve(dir, "index.json"), "utf8");
-  } catch {
-    return null;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
   }
   return validateIndex(JSON.parse(text));
 }
