@@ -2,62 +2,17 @@
 #if FEATURE_DISPLAY
 #include <Arduino.h>
 #include <string.h>
+#include "Draw.h"
 #include "Theme.h"
 
 namespace {
 using namespace Theme;
+using namespace draw;
 constexpr int W = 240, H = 135;
 constexpr uint32_t kHoldMs = 3000;  // A+B hold before bonds are cleared
 constexpr int kSplashSteps = 5;
 
 // ---- helpers --------------------------------------------------------------
-int textWidth(const char* s, int size, int spacing) {
-  int n = int(strlen(s));
-  return n ? n * (6 * size + spacing) - spacing : 0;
-}
-
-// Letter-spaced Font0 text; ASCII only.
-void label(M5Canvas& c, int x, int y, const char* s, uint16_t color, int size = 1,
-           int spacing = 1) {
-  c.setFont(&fonts::Font0);
-  c.setTextSize(size);
-  c.setTextColor(color);
-  for (; *s; ++s) {
-    c.setCursor(x, y);
-    c.write(uint8_t(*s));
-    x += 6 * size + spacing;
-  }
-}
-
-void labelRight(M5Canvas& c, int right, int y, const char* s, uint16_t color, int size = 1,
-                int spacing = 1) {
-  label(c, right - textWidth(s, size, spacing), y, s, color, size, spacing);
-}
-
-void upper(char* out, size_t cap, const char* in) {
-  size_t i = 0;
-  for (; in && in[i] && i + 1 < cap; ++i) {
-    char ch = in[i];
-    out[i] = (ch >= 'a' && ch <= 'z') ? char(ch - 32) : ch;
-  }
-  out[i] = 0;
-}
-
-void square(M5Canvas& c, int x, int y, int s, uint16_t color) { c.fillRect(x, y, s, s, color); }
-
-// L-shaped crosshair tick at a corner; dx/dy are +1/-1 pointing inward.
-void tick(M5Canvas& c, int x, int y, int dx, int dy, uint16_t color) {
-  c.drawFastHLine(dx > 0 ? x : x - 5, y, 6, color);
-  c.drawFastVLine(x, dy > 0 ? y : y - 5, 6, color);
-}
-
-void cornerTicks(M5Canvas& c, int x0, int y0, int x1, int y1, uint16_t color) {
-  tick(c, x0, y0, 1, 1, color);
-  tick(c, x1, y0, -1, 1, color);
-  tick(c, x0, y1, 1, -1, color);
-  tick(c, x1, y1, -1, -1, color);
-}
-
 // Battery body, nub, fill and readout, right-aligned at `right`.
 // Returns the left edge of the readout cluster so callers can place text beside it.
 int drawBattery(M5Canvas& c, int right, int y, int pct, bool charging) {
