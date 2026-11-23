@@ -54,8 +54,9 @@
 
 ## Module boundaries
 
-- `include/Macro.h` and the `examples/macro-clicker/` sources belong to the
-  example only; the default app does not include them.
+- `examples/macro-clicker/include/Macro.h` (`Stroke`, `Macro`, `Profile`) and the
+  other `examples/macro-clicker/` sources belong to the example only; the
+  default app does not include them.
 - `scripts/generate_config.py` plus `scripts/config/core.py` and
   `scripts/config/sections/*.py` validate YAML and compile combos and labels into
   `generated_config.h`; firmware never parses key names or text. Each section
@@ -77,7 +78,7 @@
   and advanced by `net::updateImprov()`: 15 s connection timeout, credentials
   persisted only after success, previous credentials restored on failure.
   `FEATURE_WIFI`, `FEATURE_OTA`.
-- `lib/display` (`Display.h`, `Theme.h`) and `src/StatusView.{h,cpp}`: render a
+- `lib/display` (`Display.h`, `Theme.h`, shared `Draw.h`/`Draw.cpp` helpers) and `src/StatusView.{h,cpp}`: render a
   plain model; no input logic. `FEATURE_DISPLAY`.
 - `src/main.cpp`: wiring only: board -> gestures -> keyboard -> status view.
 - `scripts/package_firmware.py` and `scripts/firmware_images.py`: read build

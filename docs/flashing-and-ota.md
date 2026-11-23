@@ -82,7 +82,7 @@ Aliases such as `sticks3-macro` (a different env on the `sticks3` board) are not
 packaged by default; use `--env sticks3-macro` to publish one instead of
 `sticks3`. Two envs on the same board cannot be packaged in one run. All
 packaged boards must share one config file, because `index.json` holds a copy
-of the parsed `config.yaml`, as written, so it must contain no secrets. Output: `index.json` (schema version 2) plus a directory
+of the parsed `config.yaml`, so it must contain no secrets. Output: `index.json` (schema version 2) plus a directory
 per board holding the four `.bin` files and `manifest.json`.
 
 If `web/public/firmware/` is absent, `npm run build` still succeeds and the

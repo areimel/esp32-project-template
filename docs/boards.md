@@ -36,22 +36,23 @@ NimBLE-Arduino from `[env]`. Pins are exact versions.
 
 ## Memory
 
-Compile-only measurements from `pio run -e <env>` with no `secrets.yaml`
-(OTA off), default `config.yaml`. These show headroom, not behavior.
+Compile-only measurements, one set: `pio run -e <env>` on commit `b049935`
+with no `secrets.yaml` (OTA off), the default `config.yaml` (BLE HID on, WiFi
+on, display on where the board has one). These show headroom, not behavior.
 
 | Env | Flash (app partition) | RAM |
 |---|---|---|
-| `sticks3` | 41.0% of 3,342,336 bytes | 19.1% |
-| `esp32s3` | 33.7% of 3,342,336 bytes | 17.2% |
-| `esp32c3` | 94.5% of 1,310,720 bytes (97.6% with OTA on) | 14.6% |
-| `esp32` | 90.8% of 1,310,720 bytes | 18.5% |
+| `sticks3` | 41.0% of 3,342,336 bytes | 19.2% |
+| `esp32s3` | 33.7% of 3,342,336 bytes | 17.3% |
+| `esp32c3` | 94.6% of 1,310,720 bytes | 14.7% |
+| `esp32` | 90.9% of 1,310,720 bytes | 18.6% |
 
 The C3 and classic ESP32 apps use the default two-app layout and have little
-room. Before adding code, check the `Flash:` line; drop modules in
-`config.yaml` (for example `ble.enabled: false`) if you run out, and
-rebuild with OTA only when you need it. Release and CI builds ship with OTA off.
-Re-measure after any dependency, source or config change; these numbers move
-(a later staging build measured 94.6% on the C3 and 90.9% on the classic ESP32).
+room; building with OTA on adds more flash and has not been measured here.
+Before adding code, check the `Flash:` line; drop modules in `config.yaml` (for
+example `ble.enabled: false`) if you run out, and rebuild with OTA only when you
+need it. Release and CI builds ship with OTA off. Re-measure after any
+dependency, source or config change; these numbers move.
 
 ## What is verified
 
@@ -66,8 +67,8 @@ Per-board physical checks are in [../TODO.md](../TODO.md).
 
 The default `config.yaml` defines two buttons. On a 1-button board the second
 entry is dropped with a build warning, and the first button is the only input.
-On 1-button boards the hold-at-boot to clear Bluetooth bonds is longer
-([getting-started.md](getting-started.md#4-use-the-default-app)). `display:` is accepted everywhere and ignored on
+On 1-button boards the hold-at-boot to clear Bluetooth bonds is 5 s instead
+of 3 s ([getting-started.md](getting-started.md#4-use-the-default-app)). `display:` is accepted everywhere and ignored on
 boards without a display.
 
 ## Add a board
