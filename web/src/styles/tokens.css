@@ -7,7 +7,6 @@
   --line: #39372f;
   --accent: #ff5b1a;
   --accent-ink: #141310;
-  --link-hover: #ff5b1a;
   color-scheme: dark;
 
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -40,7 +39,6 @@
     --line: #d4cdbb;
     --accent: #c93d00;
     --accent-ink: #fffdf7;
-    --link-hover: #c93d00;
     color-scheme: light;
   }
 }
@@ -53,6 +51,5 @@
   --line: #d4cdbb;
   --accent: #c93d00;
   --accent-ink: #fffdf7;
-  --link-hover: #c93d00;
   color-scheme: light;
 }
