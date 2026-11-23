@@ -84,9 +84,8 @@ secrets in it: it is embedded in the firmware and in the published
 ## Release builds
 
 Release and CI builds have no `secrets.yaml`, so they ship with OTA off. Flash
-size is tight on small parts: the ESP32-C3 app partition is about 94.5% full
-(97.6% with OTA on) and the classic ESP32 about 90.9% (see
-[docs/boards.md](docs/boards.md)).
+size is tight on the ESP32-C3 and classic ESP32; measured figures are in
+[docs/boards.md](docs/boards.md#memory).
 
 ## Starting a new project
 

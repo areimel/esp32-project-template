@@ -50,7 +50,8 @@ The C3 and classic ESP32 apps use the default two-app layout and have little
 room. Before adding code, check the `Flash:` line; drop modules in
 `config.yaml` (for example `ble.enabled: false`) if you run out, and
 rebuild with OTA only when you need it. Release and CI builds ship with OTA off.
-Re-measure after any dependency or config change; these numbers move.
+Re-measure after any dependency, source or config change; these numbers move
+(a later staging build measured 94.6% on the C3 and 90.9% on the classic ESP32).
 
 ## What is verified
 
@@ -65,9 +66,8 @@ Per-board physical checks are in [../TODO.md](../TODO.md).
 
 The default `config.yaml` defines two buttons. On a 1-button board the second
 entry is dropped with a build warning, and the first button is the only input.
-On 1-button boards the hold-at-boot to clear Bluetooth bonds is 5000 ms
-(3000 ms on 2-button boards), counted after the splash, so a stray press is
-unlikely to trigger it. `display:` is accepted everywhere and ignored on
+On 1-button boards the hold-at-boot to clear Bluetooth bonds is longer
+([getting-started.md](getting-started.md#4-use-the-default-app)). `display:` is accepted everywhere and ignored on
 boards without a display.
 
 ## Add a board

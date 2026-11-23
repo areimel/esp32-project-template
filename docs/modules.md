@@ -13,7 +13,7 @@ the authoritative API.
 |---|---|
 | `FEATURE_BLE_HID` | `ble.enabled` |
 | `FEATURE_WIFI` | `wifi.enabled` |
-| `FEATURE_OTA` | `ota.enabled`, `wifi.enabled` and `ota_password` in `secrets.yaml` |
+| `FEATURE_OTA` | `ota.enabled`, `wifi.enabled` and a password; see [flashing-and-ota.md](flashing-and-ota.md#ota-development-only) |
 | `FEATURE_DISPLAY` | `display.enabled` and the board has a display |
 
 Every optional module wraps its whole source in `#if FEATURE_<X>`, so a disabled
@@ -39,8 +39,8 @@ Notes:
   `BOARD_DRIVER_GPIO`. Neither waits for USB serial. The GPIO driver reads the
   `BOARD_BUTTON_PINS` list (active-low), the M5 driver uses M5Unified.
 - `holdAllButtonsAtBoot` calls `progress(remainingMs)` while held, then waits for
-  release for at most 5000 ms before continuing. The default app starts it after
-  the splash and uses 3000 ms with 2 buttons, 5000 ms with 1.
+  release for at most 5000 ms before continuing. The default app's hold times
+  are in [getting-started.md](getting-started.md#4-use-the-default-app).
 - `Gesture` is header-only with no Arduino includes. A press is always
   classified; whether it maps to an action is the caller's decision. After
   changing assignments or the link state, call `reset()` or `cancel()`.

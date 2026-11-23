@@ -16,7 +16,7 @@ size match the env, and close serial monitors. Port names are examples.
   never blocks without a host attached.
 - [ ] Bluetooth: pairs as `ble.name`, a configured button types its combo on the
   host, and input while disconnected is discarded without replay.
-- [ ] Hold-at-boot clears bonds (3 s with 2 buttons, 5 s with 1 button); the host
+- [ ] Hold-at-boot clears bonds (times in [docs/getting-started.md](docs/getting-started.md)); the host
   must forget and re-pair afterwards.
 - [ ] WiFi provisioning with Improv Serial from the web installer and from a
   serial client: success persists across reboot, a wrong password leaves the
@@ -48,7 +48,7 @@ size match the env, and close serial monitors. Port names are examples.
 ## `esp32c3` (DevKitM-1)
 
 - [ ] Compile-verified only. BOOT button (GPIO 9) and RGB LED (GPIO 8) work.
-- [ ] A build with OTA on (97.6% of the app partition at last measurement) boots
+- [ ] A build with OTA on (see the measured size in [docs/boards.md](docs/boards.md#memory)) boots
   and completes an OTA update; the app partition is nearly full.
 - [ ] Bluetooth and WiFi coexist stably.
 

@@ -32,7 +32,7 @@ Each section is its own module in `scripts/config/sections/`.
 | `ble.keystroke_ms` | no | `15` | integer 5-100 | `AppConfig::KEYSTROKE_MS`: time each key is held, and the gap after it |
 | `wifi.enabled` | no | `false` | boolean | Sets `FEATURE_WIFI`; also enables Improv in the web installer |
 | `wifi.hostname` | no | `esp32-device` | RFC 1123 label, 1-32 letters, digits or hyphens | `AppConfig::WIFI_HOSTNAME`; also the OTA hostname |
-| `ota.enabled` | no | `false` | boolean | Requests `FEATURE_OTA`; see [OTA](#ota-gating) |
+| `ota.enabled` | no | `false` | boolean | Requests `FEATURE_OTA`; see [OTA gating](#ota-gating) |
 | `display.enabled` | no | `false` | boolean | `FEATURE_DISPLAY`, only on boards with a display |
 | `display.brightness` | no | `64` | integer 1-255 | `AppConfig::DISPLAY_BRIGHTNESS` |
 | `gestures.debounce_ms` | no | `25` | integer 1-100 | Button debounce |
@@ -73,8 +73,10 @@ buttons:
 - Labels are uppercased. `label` is only a display string; it is optional.
 - If a button has no double action, a single press fires on release with no
   wait. If it has no long action, a long press is an ordinary tap.
-- A combo is zero or more modifiers followed by exactly one key, joined by `+`,
-  for example `CMD+SHIFT+4`. Names are case-insensitive. A bare YAML digit (`4`)
+- A combo is one or more names joined by `+`: zero or more modifiers followed
+  by at most one key, for example `CMD+SHIFT+4`. A modifier-only combo such as
+  `SHIFT` is accepted and sent as a modifier-only chord. An empty combo or
+  empty name is an error, as are a second key or a modifier after the key. Names are case-insensitive. A bare YAML digit (`4`)
   is accepted as the key `4`.
 
 Modifiers: `CTRL`/`CONTROL`, `SHIFT`, `ALT`/`OPT`/`OPTION`,
@@ -89,16 +91,9 @@ keyboard HID usages.
 
 ## OTA gating
 
-OTA is compiled in (`FEATURE_OTA`) only when all of these hold; otherwise the
-build prints the matching warning and continues without it:
-
-| Condition | Warning when missing |
-|---|---|
-| `ota.enabled: true` | none (OTA simply off) |
-| `ota_password` in `secrets.yaml` | `OTA disabled: no ota_password in secrets.yaml` |
-| `wifi.enabled: true` | `OTA disabled: wifi.enabled is false` |
-
-CI and release builds have no `secrets.yaml`, so they ship with OTA off.
+OTA needs `ota.enabled`, `wifi.enabled` and an `ota_password` in
+`secrets.yaml`; the conditions and warnings are in
+[flashing-and-ota.md](flashing-and-ota.md#ota-development-only).
 
 ## secrets.yaml
 

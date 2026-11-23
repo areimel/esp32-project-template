@@ -21,7 +21,7 @@ has been exercised on hardware yet; see [../TODO.md](../TODO.md).
 - If the port does not appear, use a data cable and put the board in download
   mode (commonly: hold BOOT while connecting power or pressing reset; the exact
   sequence is board specific and not verified here).
-- A normal upload keeps NVS, so Bluetooth bonds and WiFi credentials survive.
+- A normal upload is expected to keep NVS (bonds and WiFi credentials survive), because it does not rewrite that partition. Not yet observed; pending a physical check.
 
 ### Recovery
 
@@ -32,8 +32,8 @@ has been exercised on hardware yet; see [../TODO.md](../TODO.md).
 
 After an erase, WiFi must be provisioned again and the host must pair again.
 If Bluetooth will not connect after an update, forget the device on the host and
-pair again; hold every button at boot (3 s on 2-button boards, 5 s on 1-button
-boards, counted after the splash) to clear the device's bonds first.
+pair again; hold every button at boot to clear the device's bonds first (hold
+times: [getting-started.md](getting-started.md#4-use-the-default-app)).
 
 ## Browser installer
 
@@ -50,7 +50,8 @@ What it writes, per board (`<board>/manifest.json`):
 | `firmware.bin` | the first `app` partition offset |
 
 No merged image is used and nothing is written inside the NVS partition, so a
-normal install keeps bonds and WiFi credentials. The packager checks this per
+normal install is expected to keep bonds and WiFi credentials (pending a
+physical check). The packager checks the layout per
 board and fails if any part overlaps NVS or the app is larger than its
 partition. The manifest sets `new_install_prompt_erase: true`, so the installer
 offers an erase and you choose. With `wifi.enabled: true` the manifest sets
@@ -80,8 +81,8 @@ cd web && npm ci && npm run build
 Aliases such as `sticks3-macro` (a different env on the `sticks3` board) are not
 packaged by default; use `--env sticks3-macro` to publish one instead of
 `sticks3`. Two envs on the same board cannot be packaged in one run. All
-packaged boards must share one config file, because `index.json` holds a single
-sanitized copy of it. Output: `index.json` (schema version 2) plus a directory
+packaged boards must share one config file, because `index.json` holds a copy
+of the parsed `config.yaml`, as written, so it must contain no secrets. Output: `index.json` (schema version 2) plus a directory
 per board holding the four `.bin` files and `manifest.json`.
 
 If `web/public/firmware/` is absent, `npm run build` still succeeds and the
@@ -101,7 +102,17 @@ description come from `index.json` when a release is packaged.
 
 ## OTA (development only)
 
-OTA is off in CI and release builds. To use it on your own device:
+OTA is compiled in (`FEATURE_OTA`) only when all of these hold; otherwise the
+build prints the warning and continues without it. CI and release builds have no
+`secrets.yaml`, so they ship with OTA off.
+
+| Condition | Warning when missing |
+|---|---|
+| `ota.enabled: true` | none (OTA simply off) |
+| `ota_password` in `secrets.yaml` | `OTA disabled: no ota_password in secrets.yaml` |
+| `wifi.enabled: true` | `OTA disabled: wifi.enabled is false` |
+
+To use it on your own device:
 
 1. `cp secrets.example.yaml secrets.yaml` and set `ota_password` and, if needed,
    `wifi_ssid` and `wifi_password`.
@@ -147,14 +158,13 @@ manually with an existing tag). The workflow:
    packaged board, then deploys the site to Pages.
 
 Prerequisite: in the repository settings, set Pages to deploy from GitHub
-Actions. To cut a release, from a clean `main`:
+Actions. To cut a release, from a clean `main`, choose an unused version:
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+git tag vX.Y.Z
+git push origin vX.Y.Z
 ```
 
-(Documented, not run: this repository has no tags yet and the workflow was not
-executed.) CI (`.github/workflows/ci.yml`) runs on pull requests and pushes to
+(Documented, not run: the release workflow has not been executed.) CI (`.github/workflows/ci.yml`) runs on pull requests and pushes to
 `main`: one build job per env, the host and packaging checks, and the site
 checks. Its jobs and local equivalents are in [testing.md](testing.md).
