@@ -10,9 +10,8 @@ This example is built for the **M5Stack Stick-S3 (ESP32-S3)**: it needs two
 buttons and the display. It is the `sticks3-macro` PlatformIO environment; the
 default `sticks3` environment builds the starter app from `src/` instead. Both
 share the template's `lib/` modules. Unlike the original standalone firmware, a
-non-Stick-S3 M5 device is no longer refused at boot: the board layer only logs
-a warning (`expected Stick-S3, detected M5 board id ...`), so the build and
-boot proceed on hardware this example was never checked against. Hardware
+non-Stick-S3 M5 device is not refused at boot: the board layer restarts up to
+three times to retry detection, then logs a warning and continues. Hardware
 behavior is **pending physical checks** (see the acceptance checklist);
 nothing here has been observed on a device.
 

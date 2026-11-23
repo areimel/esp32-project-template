@@ -17,9 +17,19 @@ size match the env, and close serial monitors. Port names are examples.
   `BLE advertising: ESP32 Starter`, a battery reading, an Improv state frame
   and `wifi: no credentials`. It also printed the boot error
   `STA connect failed! 0x300a: ESP_ERR_WIFI_SSID`. Later firmware no longer
-  attempts a connection without credentials; the re-check on hardware is
-  pending. Display, pairing, typing, buttons, bond reset, Improv provisioning,
-  OTA, the macro example and all other boards remain pending.
+  attempts a connection without credentials.
+- 2026-11-23, same device, env `sticks3`, build `v0.1.0-40-g65c8496`, observed
+  by Claude over USB serial: the `ESP_ERR_WIFI_SSID` boot error is gone. In 2 of
+  9 USB resets M5GFX autodetect reported board id 155 (M5StampS3Mini) instead of
+  the Stick-S3.
+- 2026-11-23, same device, the following commit (board-detection retry),
+  observed by Claude over USB serial across 12 USB resets: 11 detected the
+  Stick-S3 first time; 1 misdetected, restarted once and then detected it
+  (`Stick-S3 detected after 1 restart(s)`). Whether a cold power-on misdetects
+  is not yet observed.
+
+Display, pairing, typing, buttons, bond reset, Improv provisioning, OTA, the
+macro example and all other boards remain pending.
 
 ## All boards
 
