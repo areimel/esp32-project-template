@@ -60,6 +60,53 @@ void test_truncated_length() {
   TEST_ASSERT_EQUAL(4, p.data()[0]);
 }
 
+static std::vector<uint8_t> goodFrame(uint8_t v) {
+  uint8_t d[] = {v}, f[32];
+  size_t n = improvFrame(ImprovType::CurrentState, d, 1, f, sizeof f);
+  return std::vector<uint8_t>(f, f + n);
+}
+
+void test_short_frame_then_valid_frame() {
+  // Declares 200 data bytes but only 20 arrive; a valid frame follows immediately, with nothing after it.
+  std::vector<uint8_t> bytes = {'I', 'M', 'P', 'R', 'O', 'V', 1, 1, 200};
+  bytes.insert(bytes.end(), 20, 0xEE);
+  std::vector<uint8_t> good = goodFrame(5);
+  bytes.insert(bytes.end(), good.begin(), good.end());
+  ImprovParser p;
+  TEST_ASSERT_EQUAL(1, feedAll(p, bytes.data(), bytes.size()));
+  TEST_ASSERT_EQUAL(5, p.data()[0]);
+}
+
+void test_valid_frame_inside_bad_checksum_frame() {
+  std::vector<uint8_t> inner = goodFrame(6);
+  std::vector<uint8_t> bytes = {'I', 'M', 'P', 'R', 'O', 'V', 1, 1, (uint8_t)inner.size()};
+  bytes.insert(bytes.end(), inner.begin(), inner.end());
+  bytes.push_back(0x00);  // wrong checksum for the outer frame
+  ImprovParser p;
+  TEST_ASSERT_EQUAL(1, feedAll(p, bytes.data(), bytes.size()));
+  TEST_ASSERT_EQUAL(6, p.data()[0]);
+  std::vector<uint8_t> next = goodFrame(7);
+  TEST_ASSERT_EQUAL(1, feedAll(p, next.data(), next.size()));
+  TEST_ASSERT_EQUAL(7, p.data()[0]);
+}
+
+void test_header_straddling_bad_checksum() {
+  // The bad frame's body ends with "IMPRO" and its (wrong) checksum byte is 'V': the header starts inside
+  // the discarded bytes and is completed by the checksum byte. The rest of a valid frame follows.
+  std::vector<uint8_t> good = goodFrame(8);
+  std::vector<uint8_t> bytes = {'I', 'M', 'P', 'R', 'O', 'V', 1, 1, 7, 'a', 'b', 'I', 'M', 'P', 'R', 'O', 'V'};
+  bytes.insert(bytes.end(), good.begin() + 6, good.end());
+  ImprovParser p;
+  TEST_ASSERT_EQUAL(1, feedAll(p, bytes.data(), bytes.size()));
+  TEST_ASSERT_EQUAL(8, p.data()[0]);
+}
+
+void test_wifi_settings_empty_ssid() {
+  const uint8_t rpc[] = {1, 2, 0, 0};
+  char ssid[33], pass[65];
+  TEST_ASSERT_FALSE(improvWifiSettings(rpc, sizeof rpc, ssid, sizeof ssid, pass, sizeof pass));
+}
+
 void test_wifi_settings() {
   const uint8_t rpc[] = {1, 10, 4, 'h', 'o', 'm', 'e', 4, 'p', '@', 's', 's'};
   char ssid[33], pass[65];
@@ -97,6 +144,10 @@ int main() {
   RUN_TEST(test_garbage_then_frame);
   RUN_TEST(test_bad_checksum_resyncs);
   RUN_TEST(test_truncated_length);
+  RUN_TEST(test_short_frame_then_valid_frame);
+  RUN_TEST(test_valid_frame_inside_bad_checksum_frame);
+  RUN_TEST(test_header_straddling_bad_checksum);
+  RUN_TEST(test_wifi_settings_empty_ssid);
   RUN_TEST(test_wifi_settings);
   RUN_TEST(test_rpc_result);
   return UNITY_END();

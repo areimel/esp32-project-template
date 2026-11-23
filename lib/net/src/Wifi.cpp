@@ -5,6 +5,7 @@
 
 #include "Every.h"
 #include "Log.h"
+#include "NetInternal.h"
 
 namespace {
 Every retry(10000);
@@ -37,8 +38,12 @@ void updateWifi(uint32_t now) {
     return;
   }
   ip[0] = 0;
-  haveCreds = haveCreds || WiFi.SSID().length() > 0;  // Improv may have stored new credentials
-  if (haveCreds && retry.due(now)) {
+  if (improvProvisioning()) return;  // an Improv attempt owns the connection; do not fight it
+  // Follows the live config rather than latching, so credentials restored after a failed Improv
+  // attempt do not leave a stale "have credentials" flag behind.
+  haveCreds = WiFi.SSID().length() > 0;
+  // Skip while the stack is already mid-attempt (WL_IDLE_STATUS); it also auto-reconnects on its own.
+  if (haveCreds && WiFi.status() != WL_IDLE_STATUS && retry.due(now)) {
     LOG_I("wifi: reconnecting");
     WiFi.reconnect();
   }

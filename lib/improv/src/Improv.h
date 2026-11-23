@@ -11,7 +11,9 @@ enum class ImprovCommand : uint8_t { WifiSettings = 1, GetState = 2, GetInfo = 3
 
 class ImprovParser {
  public:
-  // Feed one byte; true when a valid frame completed. Garbage and bad frames resync.
+  // Feed one byte; true when a valid frame completed. Garbage and bad frames resync: bytes of an
+  // abandoned frame are replayed through the header matcher, and a header seen inside a frame body
+  // restarts parsing there (so a short or corrupt frame never swallows the next valid one).
   bool feed(uint8_t b);
   ImprovType type() const { return static_cast<ImprovType>(type_); }
   const uint8_t* data() const { return data_; }
@@ -19,9 +21,12 @@ class ImprovParser {
 
  private:
   enum Stage : uint8_t { Header, Version, Type, Length, Data, Checksum };
+  bool consume(uint8_t b);
+  void resync();  // abandon the current frame, replaying its bytes after the first
   Stage stage_ = Header;
-  uint8_t pos_ = 0, type_ = 0, len_ = 0, sum_ = 0;
-  uint8_t data_[255];
+  uint8_t n_ = 0, type_ = 0, len_ = 0;  // n_ = bytes of the current frame held in raw_
+  uint8_t raw_[266];                    // header 6 + version + type + len + data 255 + checksum
+  uint8_t data_[255];                   // payload of the last completed frame
 };
 
 size_t improvFrame(ImprovType t, const uint8_t* data, uint8_t len, uint8_t* out, size_t cap);
