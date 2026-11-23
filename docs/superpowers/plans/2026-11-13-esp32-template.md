@@ -308,7 +308,7 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 
 **Interfaces:** Consumes `FEATURE_WIFI` and `FEATURE_OTA`, and the `AppConfig::WIFI_HOSTNAME`, `DEV_WIFI_*` and `OTA_PASSWORD` values. Produces the `Improv*` and `net::*` APIs given in **Interfaces**.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - First, re-read https://www.improv-wifi.com/serial/ to confirm the header (`IMPROV`, version `1`, type, length, data, checksum = low byte of the sum of all preceding bytes), the RPC layout (command, length, payload) and the WiFi payload (ssid_len, ssid, pass_len, pass).
   - The test cases:
     - **`test_roundtrip_state`:** `improvFrame(CurrentState, {2})` is parsed back by `ImprovParser` with type 1 and data `{2}`.
@@ -317,14 +317,14 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
     - **`test_truncated_length`:** a frame whose declared length runs past the data, followed by a valid frame, parses only the valid one.
     - **`test_wifi_settings`:** an RPC payload for SSID `"home"` and password `"p@ss"` parses to those strings. An SSID longer than the cap returns false.
     - **`test_rpc_result`:** `improvRpcResult(GetInfo, {"ESP32 Starter","v1.0.0","ESP32-S3","Stick"}, 4)` encodes a total length followed by each string's length and bytes.
-- [ ] **Step 2: Run the tests and see them fail.** Run `.venv/bin/pio test -e native -f test_improv`. The tests fail.
-- [ ] **Step 3: Implement `Improv.cpp`.** It is a pure state machine that matches the header byte by byte and restarts on a mismatch. Its total size must stay at or under 200 lines.
-- [ ] **Step 4: Run the tests and see them pass.** Run `.venv/bin/pio test -e native -f test_improv`. All tests pass.
-- [ ] **Step 5: Implement `Wifi.cpp`, `ImprovSerial.cpp` and `Ota.cpp`.**
+- [x] **Step 2: Run the tests and see them fail.** Run `.venv/bin/pio test -e native -f test_improv`. The tests fail.
+- [x] **Step 3: Implement `Improv.cpp`.** It is a pure state machine that matches the header byte by byte and restarts on a mismatch. Its total size must stay at or under 200 lines.
+- [x] **Step 4: Run the tests and see them pass.** Run `.venv/bin/pio test -e native -f test_improv`. All tests pass.
+- [x] **Step 5: Implement `Wifi.cpp`, `ImprovSerial.cpp` and `Ota.cpp`.**
   - `Wifi.cpp` is non-blocking. It sets `WiFi.persistent(true)` and `setHostname`, and reconnects every 10 s while disconnected.
   - `ImprovSerial` answers `GetState`, `GetInfo` and `WifiSettings`. For `WifiSettings` it connects with a 15 s timeout, replies with `http://<ip>`, and sends `UnableToConnect` on timeout.
   - `Ota.cpp` uses ArduinoOTA with the hostname and password. It logs progress, and `otaActive()` is true from onStart until onEnd or onError.
-- [ ] **Step 6: Build every board env.** Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All report SUCCESS.
+- [x] **Step 6: Build every board env.** Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All report SUCCESS.
   - Also build once with a local `secrets.yaml` containing `ota_password: test` and confirm the build log shows no "OTA disabled" warning.
   - Delete that `secrets.yaml` afterwards.
   - Commit 4: "WiFi with Improv provisioning and dev-only LAN OTA".
@@ -424,7 +424,7 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
   - **Atomic output:** if any board fails, nothing is written to the output.
 - [x] **Step 2: Run the tests and see them fail.** Run `python -m unittest scripts.tests.test_packaging -v`. The tests fail.
 - [x] **Step 3: Implement the packager.** Parameterize today's validations by chip. The parser for each chip comes from PlatformIO's vendored esptool (`ESP32FirmwareImage`, `ESP32S3FirmwareImage` and `ESP32C3FirmwareImage`), and the checksum and SHA checks are kept. Stage the output in a temporary directory and rename it into place.
-- [ ] **Step 4: Run the tests and package the real builds.**
+- [x] **Step 4: Run the tests and package the real builds.**
   - Run `python -m unittest scripts.tests.test_packaging -v` and the real packaging run, `python scripts/package_firmware.py --output web/public/firmware --version 0.0.0-dev`.
   - The tests pass.
   - The run prints one line per board, and 4 manifests exist.
@@ -476,7 +476,7 @@ This task can run in parallel with Tasks 1 to 8, because it consumes only the `i
   - `InstallCard` renders `<esp-web-install-button manifest={base + board.manifest}>` with an `activate` slot `.btn.btn-primary` and `unsupported` and `not-allowed` slot notes. It imports the element in a client `<script>`.
   - When the index is null, the page shows the Hero and a `.note` reading "No release published yet. Build locally with `pio run`, or publish a release to enable browser install."
   - The page copy mentions that release builds have OTA disabled.
-- [ ] **Step 4: Run the checks.** Run `npm test && npm run check && npm run build`, first with `web/public/firmware` absent and then with the Task 8 output present. Both runs succeed. Commit 8: "Rebuild microsite on ESP Web Tools with shared components".
+- [x] **Step 4: Run the checks.** Run `npm test && npm run check && npm run build`, first with `web/public/firmware` absent and then with the Task 8 output present. Both runs succeed. Commit 8: "Rebuild microsite on ESP Web Tools with shared components".
 
 ### Task 10: Site styles split
 
