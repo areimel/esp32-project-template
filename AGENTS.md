@@ -18,12 +18,13 @@
   - `include/Macro.h` is the shared data contract (`Stroke`, `Macro`, `Profile`).
   - `scripts/generate_config.py` validates YAML and compiles key combos, text and
     labels into strokes; firmware never parses key names or text.
-  - `Gesture.h`, `Controller.h`, `MacroPlayer.h` are pure, header-only logic with
-    host C++ tests; no Arduino or hardware includes.
-  - `BleKeyboard.h`/`src/BleKeyboard.cpp` is the HID transport only (one
+  - `lib/input/src/Gesture.h`, `Controller.h`, `MacroPlayer.h` are pure,
+    header-only logic with host tests; no Arduino or hardware includes.
+  - `lib/ble_hid/src/BleKeyboard.{h,cpp}` is the HID transport only (one
     keystroke at a time, paced by `keystroke_ms`).
   - `Theme.h`/`Ui.h`/`src/Ui.cpp` render a plain `UiModel`; no input logic.
-  - `ProfileStore` persists the active profile in NVS.
+  - `lib/store/src/Settings` wraps NVS (Preferences) and skips unchanged writes;
+    it will persist the active profile once the macro example is wired in.
   - `src/main.cpp` is wiring: controller -> player -> keyboard -> ui.
   - `web/` is the independent Astro flasher; it reads config from the packaged
     manifest rather than duplicating it.
@@ -49,9 +50,9 @@ are `.venv\Scripts\pio` and `.venv\Scripts\python`. The PlatformIO Python
 environment must contain PyYAML for the pre-build generator.
 
 Run `python -m unittest discover -s scripts/tests -v` (after a firmware build, because
-packaging tests use PlatformIO's esptool) and the four host C++ tests listed in
-README.md (gesture, controller, player; BLE with `-Itests/ble` and
-`src/BleKeyboard.cpp`) when changing those behaviors. Windows has no native
+packaging tests use PlatformIO's esptool), `.venv/bin/pio test -e native`
+(gesture, BLE, Every), and the two standalone host C++ tests listed in README.md
+(controller, player) when changing those behaviors. Windows has no native
 compiler by default: use WSL or `docker run --rm -v "${PWD}:/src" -w /src gcc:14
 sh -c "..."`. For web changes run `npm ci`, `npm run check`, `npm test`, and
 `npm run build` in `web/`. Verify a firmware build after integration. Do not

@@ -363,26 +363,27 @@ PlatformIO installs with the build tools.
 .venv/bin/python -m unittest discover -s scripts/tests -v          # Windows: .venv\Scripts\python
 ```
 
-The hardware-independent logic has four native C++ test programs: gesture,
-controller, macro player (C++11), and the BLE keyboard transport (C++17, using
-fake Arduino/NimBLE headers in `tests/ble`):
+The gesture, BLE keyboard transport (using fake Arduino/NimBLE headers in
+`test/stubs`) and `Every` logic run as PlatformIO Unity tests on the host:
 
 ```sh
-c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_gesture.cpp -o /tmp/sticks3-gesture-tests && /tmp/sticks3-gesture-tests
-c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_controller.cpp -o /tmp/sticks3-controller-tests && /tmp/sticks3-controller-tests
-c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_player.cpp -o /tmp/sticks3-player-tests && /tmp/sticks3-player-tests
-c++ -std=c++17 -Wall -Wextra -Werror -Itests/ble -Iinclude tests/test_ble.cpp src/BleKeyboard.cpp -o /tmp/sticks3-ble-tests && /tmp/sticks3-ble-tests
+.venv/bin/pio test -e native                                         # Windows: .venv\Scripts\pio
 ```
 
-No C++ compiler (for example on Windows)? Run them in WSL, or in a throwaway
+The controller and macro player still have two standalone C++11 test programs:
+
+```sh
+c++ -std=c++11 -Wall -Wextra -Werror -Iinclude -Ilib/input/src tests/test_controller.cpp -o /tmp/sticks3-controller-tests && /tmp/sticks3-controller-tests
+c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_player.cpp -o /tmp/sticks3-player-tests && /tmp/sticks3-player-tests
+```
+
+No C++ compiler (for example on Windows)? Run the standalone programs in WSL, or in a throwaway
 Docker container from the repository root:
 
 ```sh
 docker run --rm -v "${PWD}:/src" -w /src gcc:14 sh -c "
-  c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_gesture.cpp -o /tmp/g && /tmp/g &&
-  c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_controller.cpp -o /tmp/c && /tmp/c &&
-  c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_player.cpp -o /tmp/p && /tmp/p &&
-  c++ -std=c++17 -Wall -Wextra -Werror -Itests/ble -Iinclude tests/test_ble.cpp src/BleKeyboard.cpp -o /tmp/b && /tmp/b"
+  c++ -std=c++11 -Wall -Wextra -Werror -Iinclude -Ilib/input/src tests/test_controller.cpp -o /tmp/c && /tmp/c &&
+  c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_player.cpp -o /tmp/p && /tmp/p"
 ```
 
 (`${PWD}` is PowerShell/Bash syntax; use `%cd%` in cmd.exe.) The web flasher has
