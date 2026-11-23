@@ -217,6 +217,16 @@ class PackagingTests(unittest.TestCase):
         self.assertTrue((self.output / "index.json").is_file())
         self.assertEqual([p.name for p in self.output.parent.iterdir()], ["firmware"])
 
+    def test_boards_dropped_from_the_index_are_removed(self):
+        self.package()
+        (self.output / "other").mkdir()  # not a packager board: stays
+        self.package(envs=["sticks3", "esp32"])
+        self.assertFalse((self.output / "esp32c3").exists())
+        self.assertTrue((self.output / "esp32/manifest.json").is_file())
+        self.assertTrue((self.output / "other").is_dir())
+        self.assertEqual([b["id"] for b in json.loads((self.output / "index.json").read_text())["boards"]],
+                         ["sticks3", "esp32"])
+
     def test_failure_partway_through_swap_restores_previous_output(self):
         import package_firmware
         self.package()

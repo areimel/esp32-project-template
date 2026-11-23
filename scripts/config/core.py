@@ -54,6 +54,8 @@ UniqueKeyLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, 
 def load_yaml(path):
     try:
         return yaml.load(Path(path).read_text(encoding="utf-8"), Loader=UniqueKeyLoader)
+    except UnicodeDecodeError as exc:
+        raise ConfigError(str(path), f"not valid UTF-8 text ({exc.reason} at byte {exc.start})") from exc
     except yaml.YAMLError as exc:
         raise ConfigError(str(path), f"malformed YAML: {exc}") from exc
 

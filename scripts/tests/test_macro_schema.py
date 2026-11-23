@@ -85,15 +85,18 @@ class MacroSchemaTests(unittest.TestCase):
     # --- combos -----------------------------------------------------------
     def test_combo_parsing(self):
         cases = {
-            "A": (0, 0x04), "ctrl+c": (CTRL, 0x06), " Cmd + Shift + z ": (GUI | SHIFT, 0x1D),
-            "CONTROL+ALT+DELETE": (CTRL | ALT, 0x4C), "OPTION+X": (ALT, 0x1B), "WIN+E": (GUI, 0x08),
-            "SHIFT": (SHIFT, 0), "CTRL+SHIFT": (CTRL | SHIFT, 0), "F13": (0, 0x68),
+            "A": (0, 0x04), "CONTROL+ALT+DELETE": (CTRL | ALT, 0x4C), "OPTION+X": (ALT, 0x1B), "WIN+E": (GUI, 0x08),
+            "CTRL+SHIFT": (CTRL | SHIFT, 0), "F13": (0, 0x68),
             "F24": (0, 0x73), "ALT+F4": (ALT, 0x3D), "CTRL+MINUS": (CTRL, 0x2D),
             "ESCAPE": (0, 0x29), "PAGE_UP": (0, 0x4B),
         }
         for text, expected in cases.items():
             with self.subTest(text=text):
                 self.assertEqual(keys.parse_combo(text, "t"), expected)
+
+    def test_combo_normalization(self):
+        self.assertEqual(schema._combo(" Cmd + Shift + z ", "t"), (GUI | SHIFT, 0x1D, "CMD+SHIFT+Z"))
+        self.assertEqual(schema._combo("ctrl+c", "t"), (CTRL, 0x06, "CTRL+C"))
 
     def test_digits_as_ints(self):
         self.assertEqual(keys.parse_combo(1, "t"), (0, 0x1E))
