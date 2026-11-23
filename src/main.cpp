@@ -4,6 +4,9 @@
 #include "Every.h"
 #include "Log.h"
 #include "generated_config.h"
+#if FEATURE_WIFI
+#include <Net.h>
+#endif
 
 namespace {
 Every blink(500);
