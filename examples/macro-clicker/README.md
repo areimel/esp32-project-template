@@ -108,7 +108,8 @@ is still typing therefore stops it rather than queueing a second run.
 ### Bond reset
 
 Hold **both application buttons during startup for three seconds** (the timer
-starts after the splash; keep them held through it) and follow the
+starts after the splash; keep them held through it, or press both within about
+1 s of the splash ending) and follow the
 `BLUETOOTH` progress screen. Then forget the device on the host and pair again.
 
 ## On-screen display

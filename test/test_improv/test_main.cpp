@@ -172,6 +172,19 @@ void test_rpc_result() {
   TEST_ASSERT_EQUAL(0, improvRpcResult(ImprovCommand::GetInfo, s, 4, tiny, sizeof tiny));
 }
 
+// The device runs no web server, so a successful provision answers with no redirect URL.
+void test_rpc_result_without_strings() {
+  uint8_t f[16];
+  const size_t n = improvRpcResult(ImprovCommand::WifiSettings, nullptr, 0, f, sizeof f);
+  TEST_ASSERT_EQUAL(10 + 2, n);
+  TEST_ASSERT_EQUAL(4, f[7]);  // RpcResult
+  TEST_ASSERT_EQUAL(2, f[8]);  // payload: command, total string length
+  TEST_ASSERT_EQUAL(1, f[9]);  // WifiSettings
+  TEST_ASSERT_EQUAL(0, f[10]);
+  ImprovParser p;
+  TEST_ASSERT_EQUAL(1, feedAll(p, f, n));
+}
+
 int main() {
   UNITY_BEGIN();
   RUN_TEST(test_roundtrip_state);
@@ -187,5 +200,6 @@ int main() {
   RUN_TEST(test_wifi_settings_empty_ssid);
   RUN_TEST(test_wifi_settings);
   RUN_TEST(test_rpc_result);
+  RUN_TEST(test_rpc_result_without_strings);
   return UNITY_END();
 }

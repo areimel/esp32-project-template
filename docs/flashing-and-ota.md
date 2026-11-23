@@ -60,7 +60,10 @@ after the flash.
 
 ### Package locally
 
-Packaging reads existing build outputs, so build first.
+Packaging reads existing build outputs, so build first. Build without
+`secrets.yaml`: the packager refuses an env whose `secrets.yaml` sets any value
+or that has OTA compiled in, because those are plaintext in `firmware.bin`.
+Move `secrets.yaml` aside and rebuild before packaging for publication.
 
 ```sh
 for e in $(python scripts/list_envs.py | python -c "import json,sys;print(' '.join(json.load(sys.stdin)))"); do
@@ -77,6 +80,7 @@ cd web && npm ci && npm run build
 | `--commit` | Full lowercase SHA; default `git rev-parse HEAD` |
 | `--env ENV` | Package only this env; repeat for several. Default: every env whose board id equals its env name |
 | `--project DIR` | Repository root; default is this repository |
+| `--allow-secrets` | Package even though `secrets.yaml` sets a value or OTA is compiled in; prints a warning. Local use only, never publish the output |
 
 Aliases such as `sticks3-macro` (a different env on the `sticks3` board) are not
 packaged by default; use `--env sticks3-macro` to publish one instead of
@@ -134,11 +138,18 @@ To use it on your own device:
 Behavior and limits:
 
 - The OTA hostname is `wifi.hostname`; the password is compiled into the image.
-  Do not distribute binaries built with a real `secrets.yaml`.
-- During an OTA transfer the default app releases keys and ignores buttons.
+  Do not distribute binaries built with a real `secrets.yaml`; the packager
+  refuses them unless given `--allow-secrets`.
+- A transfer runs inside `net::updateOta()`, so the app loop does not run
+  during it. As it starts, the default app releases any held key and shows
+  `OTA UPDATING`; presses during the transfer are never read. Success restarts
+  the device. After a failed transfer the app resets its gesture state and
+  continues.
 - No rollback is implemented. A bad OTA image needs a USB reflash.
-- OTA needs room for a second app partition and the C3 image is near full (see
-  [boards.md](boards.md)); watch the `Flash:` line of the build.
+- OTA needs room for a second app partition. With the default config the C3
+  OTA image is larger than its app partition (measured, see
+  [boards.md](boards.md#memory)); drop a module first, and check the
+  `firmware.bin` size, not only the `Flash:` line.
 - The `espota` upload commands above are documented from PlatformIO's
   conventions and have not been run.
 

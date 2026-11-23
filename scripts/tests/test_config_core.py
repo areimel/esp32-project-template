@@ -76,6 +76,24 @@ class CoreTests(unittest.TestCase):
             self.assertIn("secrets.yaml", str(caught.exception))
             self.assertIn("malformed YAML", str(caught.exception))
 
+    def test_malformed_secrets_error_never_echoes_the_secret(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "secrets.yaml"
+            for text in ('wifi_ssid: home\nota_password: "topsecretpw\n',
+                         "ota_password: topsecretpw: more\n",
+                         "ota_password: topsecretpw\n\tbad: indent\n"):
+                with self.subTest(text=text):
+                    path.write_text(text, encoding="utf-8")
+                    with self.assertRaises(ConfigError) as caught:
+                        load_secrets(path)
+                    message = str(caught.exception)
+                    self.assertNotIn("topsecretpw", message)
+                    self.assertIn("secrets.yaml", message)
+                    self.assertRegex(message, r"malformed YAML at line \d+, column \d+")
+                    # The PyYAML exception (whose text quotes the source) is not chained either.
+                    self.assertIsNone(caught.exception.__cause__)
+                    self.assertTrue(caught.exception.__suppress_context__)
+
     def test_generate_error_names_file_once(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "config.yaml"

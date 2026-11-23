@@ -29,12 +29,15 @@ for e in sticks3 esp32s3 esp32c3 esp32; do .venv/bin/pio run -e "$e"; done
 `[env:native]` builds with the host compiler, `-Itest/stubs` and
 `-DFEATURE_BLE_HID=1`, and ignores `board`, `net`, `display` and `store`. Only
 pure logic and the BLE state machine (against stubs in `test/stubs/`) run there.
+`test_boot_hold` includes the header-only `lib/board/src/BootHold.h` directly
+and supplies a scripted `board::` and the fake clock.
 
 | Suite | Covers |
 |---|---|
 | `test_gesture` | `Gesture`: debounce, double window, one-shot long press, release suppression, `cancel`, `reset` |
 | `test_every` | `Every`: first call, period, millis wraparound, no burst |
-| `test_improv` | Improv codec: round trips, garbage then a frame, bad checksum resync, truncated length, WiFi settings, RPC results |
+| `test_improv` | Improv codec: round trips, garbage then a frame, bad checksum resync, truncated length, WiFi settings, RPC results (with and without strings) |
+| `test_boot_hold` | `holdAllButtonsAtBoot` against a scripted board: grace window, hold through reset, early release, no buttons |
 | `test_ble` | `BleKeyboard` stroke pacing, explicit release, abort, generation changes, against NimBLE stubs |
 | `test_macro_controller_gestures`, `test_macro_controller_picker`, `test_macro_player` | Macro example logic; added with [examples/macro-clicker](../examples/macro-clicker/README.md) |
 
@@ -46,10 +49,11 @@ Arduino includes and test that.
 
 | File | Covers |
 |---|---|
-| `test_config_core.py` | YAML loader (duplicate keys), `fields`, `integer`, `cstr`, secrets loading, section loading |
+| `test_config_core.py` | YAML loader (duplicate keys), `fields`, `integer`, `cstr`, secrets loading (errors never quote the file), section loading |
 | `test_sections.py` | Each built-in section: limits, defaults, errors with paths, feature flags, OTA gating |
 | `test_buttons.py` | Button and key-combo parsing, per-board slot counts and the dropped-button warning |
-| `test_packaging.py` | Manifest shape, offsets, NVS-overlap guard, checksums, atomic publish, image validation |
+| `test_packaging.py` | Manifest shape, offsets, NVS-overlap guard, checksums, atomic publish, image validation (fixture in `packaging_support.py`) |
+| `test_packaging_secrets.py` | Refusal to package builds with `secrets.yaml` values or OTA, `allow_secrets`, no secret in any packaged `.bin` or `.json` |
 | `test_macro_schema.py` | The macro example's `profiles` section; added with the example |
 
 ## Site tests (`web/`)

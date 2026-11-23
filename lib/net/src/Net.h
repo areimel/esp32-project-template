@@ -16,9 +16,12 @@ void beginImprov(const char* firmware, const char* version, const char* chip, co
 void updateImprov();  // drains Serial, answers RPCs, provisions via WiFi.begin + persist
 
 #if FEATURE_OTA
-void beginOta(const char* hostname, const char* password);
+// onStart runs once when a transfer begins, before any data is received: release held keys and
+// draw an updating screen there. The loop does not run during the transfer.
+void beginOta(const char* hostname, const char* password, void (*onStart)() = nullptr);
+// Runs a whole transfer inline (ArduinoOTA.handle()): success restarts the device; on failure it
+// returns to the caller after onError, and the app resumes.
 void updateOta();
-bool otaActive();  // true from onStart until onEnd/onError
 #endif
 }  // namespace net
 #endif

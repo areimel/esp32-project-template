@@ -48,17 +48,23 @@ on, display on where the board has one). These show headroom, not behavior.
 | `esp32` | 90.9% of 1,310,720 bytes | 18.6% |
 
 The C3 and classic ESP32 apps use the default two-app layout and have little
-room; building with OTA on adds more flash and has not been measured here.
-Before adding code, check the `Flash:` line; drop modules in `config.yaml` (for
-example `ble.enabled: false`) if you run out, and rebuild with OTA only when you
-need it. Release and CI builds ship with OTA off. Re-measure after any
+room. The `Flash:` line undercounts the image: the `esp32c3` `firmware.bin` is
+1,270,320 bytes (96.9% of the partition) with OTA off. One build with a
+temporary `secrets.yaml` (OTA and dev WiFi credentials on) printed
+`Flash: 97.7%`, but its `firmware.bin` was 1,317,440 bytes, larger than the
+1,310,720-byte app partition: with the default config, OTA does not fit on the
+C3 (the packager also rejects an oversized image). `sticks3` with OTA on printed
+42.1%. Before adding code, check the `Flash:` line and the `firmware.bin` size;
+drop modules in `config.yaml` (for example `ble.enabled: false`) if you run
+out, and rebuild with OTA only when you need it. Release and CI builds ship with OTA off. Re-measure after any
 dependency, source or config change; these numbers move.
 
 ## What is verified
 
 | Env | Status |
 |---|---|
-| `sticks3`, `esp32s3`, `esp32c3`, `esp32` | Compiles. No hardware behavior has been observed on any board |
+| `sticks3` | Compiles. One boot observed over USB serial (see [../TODO.md](../TODO.md#observed)); display, pairing, typing, buttons and everything else pending |
+| `esp32s3`, `esp32c3`, `esp32` | Compiles. No hardware behavior has been observed |
 | `native` | Unit tests pass on the host |
 
 Per-board physical checks are in [../TODO.md](../TODO.md).

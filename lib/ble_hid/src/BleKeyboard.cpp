@@ -18,6 +18,8 @@ uint8_t reportMap[] = {
     0x95, 0x06, 0x75, 0x08, 0x15, 0x00, 0x26, 0xE7, 0x00,
     0x05, 0x07, 0x19, 0x00, 0x29, 0xE7, 0x81, 0x00, 0xC0};
 constexpr uint8_t kMaxUsage = 0xE7;
+// Device Information service string (not part of the HID report descriptor); neutral for every app and board.
+constexpr const char* kManufacturer = "ESP32 Starter Template";
 }
 
 void BleKeyboard::begin(const char* name, uint16_t keystrokeMs) {
@@ -34,7 +36,7 @@ void BleKeyboard::begin(const char* name, uint16_t keystrokeMs) {
   input_ = hid_->getInputReport(1);
   input_->setCallbacks(this);
   hid_->getOutputReport(1);  // Keyboard LED report; no physical LEDs to update.
-  hid_->setManufacturer("Stick-S3 Macro");
+  hid_->setManufacturer(kManufacturer);
   // Unassigned USB vendor/product IDs for this private prototype.
   hid_->setPnp(2, 0, 0, 0x0100);
   hid_->setHidInfo(0, 0x02);

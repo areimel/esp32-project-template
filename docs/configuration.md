@@ -109,7 +109,12 @@ accepted, each a string; anything else is an error.
 `DEV_WIFI_SSID` and `DEV_WIFI_PASSWORD` are empty strings when unset. These
 values are compiled into your local firmware image, so do not publish a binary
 built with them. The packager reads `secrets.yaml` only to render the config for
-comparison and writes none of it to a manifest or `index.json`.
+comparison and writes none of it to a manifest or `index.json`. It refuses to
+package when `secrets.yaml` sets any value or OTA is compiled in, because
+`firmware.bin` then holds them in plaintext; `--allow-secrets` overrides that
+for a deliberate local package
+([flashing-and-ota.md](flashing-and-ota.md#package-locally)). A malformed
+`secrets.yaml` is reported by line and column only, never with its text.
 
 ## Per-env overrides
 
