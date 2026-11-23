@@ -13,53 +13,76 @@ uint8_t sumOf(const uint8_t* p, size_t n) {
 }
 }  // namespace
 
-bool ImprovParser::feed(uint8_t b) {
+bool ImprovParser::feed(uint8_t b) { return consume(b); }
+
+void ImprovParser::resync() {
+  uint8_t tmp[sizeof raw_];
+  if (n_ < 1 || n_ > sizeof raw_) n_ = 1;  // defensive; cannot happen
+  const size_t m = n_ - 1u;
+  memcpy(tmp, raw_ + 1, m);
+  stage_ = Header;
+  n_ = 0;
+  // The replayed bytes hold no complete frame, so this cannot succeed or recurse deeply.
+  for (size_t i = 0; i < m; ++i) consume(tmp[i]);
+}
+
+bool ImprovParser::consume(uint8_t b) {
+  if (stage_ == Header) {  // the header's letters are distinct, so a mismatch restarts at b
+    if (b == static_cast<uint8_t>(kHeader[n_])) {
+      raw_[n_++] = b;
+      if (n_ == sizeof kHeader) stage_ = Version;
+    } else {
+      n_ = 0;
+      if (b == static_cast<uint8_t>(kHeader[0])) raw_[n_++] = b;
+    }
+    return false;
+  }
+  if (n_ >= sizeof raw_) {  // unreachable by construction (max frame is 265 bytes); never write out of bounds
+    n_ = 0;
+    stage_ = Header;
+    return false;
+  }
+  raw_[n_++] = b;
+  bool lastByte = false;  // b was the checksum byte
   switch (stage_) {
-    case Header:  // matched byte by byte; a mismatch restarts, re-testing b as a first byte
-      if (b == static_cast<uint8_t>(kHeader[pos_])) {
-        sum_ = static_cast<uint8_t>(pos_ == 0 ? b : sum_ + b);
-        if (++pos_ == sizeof kHeader) stage_ = Version;
-      } else {
-        pos_ = 0;
-        if (b == static_cast<uint8_t>(kHeader[0])) {
-          sum_ = b;
-          pos_ = 1;
-        }
-      }
-      return false;
     case Version:
-      if (b != kVersion) {
-        stage_ = Header;
-        pos_ = 0;
-        feed(b);
-        return false;
-      }
-      sum_ = static_cast<uint8_t>(sum_ + b);
-      stage_ = Type;
+      if (b != kVersion) resync();
+      else stage_ = Type;
       return false;
     case Type:
       type_ = b;
-      sum_ = static_cast<uint8_t>(sum_ + b);
       stage_ = Length;
       return false;
     case Length:
       len_ = b;
-      pos_ = 0;
-      sum_ = static_cast<uint8_t>(sum_ + b);
       stage_ = len_ ? Data : Checksum;
       return false;
     case Data:
-      data_[pos_++] = b;
-      sum_ = static_cast<uint8_t>(sum_ + b);
-      if (pos_ == len_) stage_ = Checksum;
-      return false;
-    case Checksum: {
-      const bool ok = b == sum_;
-      stage_ = Header;
-      pos_ = 0;
-      if (!ok) feed(b);  // the bad byte may start a new header
-      return ok;
-    }
+      if (n_ == 9u + len_) stage_ = Checksum;
+      break;
+    case Checksum:
+      lastByte = true;
+      if (b == sumOf(raw_, n_ - 1)) {
+        memcpy(data_, raw_ + 9, len_);
+        stage_ = Header;
+        n_ = 0;
+        return true;
+      }
+      break;
+    default:
+      break;
+  }
+  // Data/Checksum bytes of a frame that did not complete. A full header inside them means the frame was
+  // cut short: restart there. Trade-off (deliberate, pinned by a test): a correctly checksummed frame whose
+  // payload contains "IMPROV\x01" is dropped too. That is what recovers a truncated frame without waiting
+  // for filler bytes, and 0x01 after "IMPROV" cannot occur in a typed SSID or password.
+  // A bad checksum abandons the frame and replays its tail for a partial header.
+  if (n_ > 7 && memcmp(raw_ + n_ - 7, kHeader, 6) == 0 && raw_[n_ - 1] == kVersion) {
+    memmove(raw_, raw_ + n_ - 7, 7);
+    n_ = 7;
+    stage_ = Type;
+  } else if (lastByte) {
+    resync();
   }
   return false;
 }
@@ -95,7 +118,7 @@ bool improvWifiSettings(const uint8_t* rpc, uint8_t len, char* ssid, size_t ssid
   if (len < 4 || rpc[0] != static_cast<uint8_t>(ImprovCommand::WifiSettings)) return false;
   if (rpc[1] + 2u != len) return false;
   const uint8_t sl = rpc[2];
-  if (3u + sl + 1u > len) return false;
+  if (sl == 0 || 3u + sl + 1u > len) return false;  // empty SSID is invalid
   const uint8_t pl = rpc[3 + sl];
   if (3u + sl + 1u + pl != len) return false;
   if (sl >= ssidCap || pl >= passCap) return false;
