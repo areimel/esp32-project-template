@@ -41,3 +41,6 @@ platformio_override.ini
 
 # Scratch/demo media
 brag-output/
+
+# Subagent-driven-development scratch (ledger, briefs, review packages)
+.superpowers/

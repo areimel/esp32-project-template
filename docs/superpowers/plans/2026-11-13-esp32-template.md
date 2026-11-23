@@ -213,7 +213,7 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 - Produces: `keys.parse_combo(value, path) -> (mods, usage)` and `keys.MODIFIERS`, `keys.KEYS` and `keys.ASCII`, moved from `generate_config.py`.
 - Produces: `scripts/list_envs.py`, which prints a JSON array of every `[env:*]` name except `native`.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
   - In `test_config_core`:
     - duplicate YAML keys are rejected;
     - non-string keys are rejected;
@@ -228,14 +228,14 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
   - Secrets:
     - A `ctx.secrets` of `{}` with `ota.enabled: true` yields no `OTA_PASSWORD` in the header, and the warnings include `OTA disabled: no ota_password in secrets.yaml`.
     - A secrets file with keys other than `ota_password`, `wifi_ssid` and `wifi_password` is rejected.
-- [ ] **Step 2: Run the tests and see them fail.** Run `python -m unittest discover -s scripts/tests -v`. The tests fail with `ModuleNotFoundError: config`.
-- [ ] **Step 3: Implement `scripts/config/core.py`.** It defines `UniqueKeyLoader`, `ConfigError(path, msg)`, `fields`, `integer`, `cstr`, `write_if_changed`, `Context` and `load_sections(data) -> list[module]`. The last loads the built-ins plus `data["schema"]`, resolved relative to the config file. Then implement the section modules and `render(data, ctx) -> (header: str, features: dict[str, bool])`.
-- [ ] **Step 4: Rewrite `scripts/platformio_config.py`.** Its job:
+- [x] **Step 2: Run the tests and see them fail.** Run `python -m unittest discover -s scripts/tests -v`. The tests fail with `ModuleNotFoundError: config`.
+- [x] **Step 3: Implement `scripts/config/core.py`.** It defines `UniqueKeyLoader`, `ConfigError(path, msg)`, `fields`, `integer`, `cstr`, `write_if_changed`, `Context` and `load_sections(data) -> list[module]`. The last loads the built-ins plus `data["schema"]`, resolved relative to the config file. Then implement the section modules and `render(data, ctx) -> (header: str, features: dict[str, bool])`.
+- [x] **Step 4: Rewrite `scripts/platformio_config.py`.** Its job:
   - Skip entirely when `env["PIOPLATFORM"] == "native"`.
   - Resolve `custom_config` (default `config.yaml`) and `custom_board` (default `env["PIOENV"]`), and read `boards/boards.yaml` and the optional `secrets.yaml`.
   - Generate the header into `$BUILD_DIR/generated/`.
   - Append the CPPPATH and the CPPDEFINES, and print the warnings.
-- [ ] **Step 5: Restructure `platformio.ini`.**
+- [x] **Step 5: Restructure `platformio.ini`.**
   - `[platformio] extra_configs = platformio_override.ini`. Confirm that a missing file is tolerated. If it is not, document copying the `.example` file instead.
   - `[env]`:
     - `platform = <pioarduino stable release zip URL, exact tag>`
@@ -248,8 +248,8 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
     - `esp32c3` uses `esp32-c3-devkitm-1`.
     - `esp32` uses `esp32dev`.
   - `[env:native]`: `platform = native`, `test_framework = unity`, empty `lib_deps`, `lib_ignore = board, net, display, store`, `build_flags = -std=gnu++17 -Itest/stubs -Iexamples/macro-clicker/include`.
-- [ ] **Step 6: Run the tests and see them pass.** Run `python -m unittest discover -s scripts/tests -v`. All tests pass.
-- [ ] **Step 7: Confirm that each board env reaches compilation.**
+- [x] **Step 6: Run the tests and see them pass.** Run `python -m unittest discover -s scripts/tests -v`. All tests pass.
+- [x] **Step 7: Confirm that each board env reaches compilation.**
   - Use a temporary `src/main.cpp` that only includes `generated_config.h`, logs `BOARD_LABEL`, and stays in `loop` doing `delay(1)`.
   - Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All four report SUCCESS.
   - `include/` keeps the old headers until Tasks 2 to 7 move them. Old `src/*.cpp` files that no longer compile go behind `build_src_filter = +<main.cpp>` in `[env]` for now.
@@ -265,15 +265,15 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 
 **Interfaces:** Consumes the Task 1 CPPDEFINES. Produces `Every`, `LOG_*`, `board::*` and `holdAllButtonsAtBoot`, as given in **Interfaces**.
 
-- [ ] **Step 1: Write the failing test.** In `test_every`:
+- [x] **Step 1: Write the failing test.** In `test_every`:
   - `Every e(100)`: `due(0)` is true, `due(50)` is false, `due(100)` is true, and `due(150)` is false.
   - The wrap case: `Every w(10)` with `due(0xFFFFFFF8)` true, then `due(2)` true.
-- [ ] **Step 2: Run the test and see it fail.** Run `.venv/bin/pio test -e native -f test_every`. It fails because `Every.h` is not found.
-- [ ] **Step 3: Implement `Every.h`, `Log.h`, `Board.h` and its two drivers, and `BootHold.h`.**
+- [x] **Step 2: Run the test and see it fail.** Run `.venv/bin/pio test -e native -f test_every`. It fails because `Every.h` is not found.
+- [x] **Step 3: Implement `Every.h`, `Log.h`, `Board.h` and its two drivers, and `BootHold.h`.**
   - `BoardM5.cpp` (`#if BOARD_DRIVER_M5`) moves the M5 config, button and power code out of today's `main.cpp`. If `M5.getBoard() != board_M5StickS3` it logs a warning but does not halt.
   - `BoardGpio.cpp` (`#if BOARD_DRIVER_GPIO`) treats buttons as active-low with `INPUT_PULLUP`.
-- [ ] **Step 4: Run the test and see it pass.** Run `.venv/bin/pio test -e native -f test_every`. It passes.
-- [ ] **Step 5: Build every board env.** Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All four report SUCCESS. Tasks 1 and 2 share commit 2: "Multi-board PlatformIO layout on Arduino-ESP32 3.x".
+- [x] **Step 4: Run the test and see it pass.** Run `.venv/bin/pio test -e native -f test_every`. It passes.
+- [x] **Step 5: Build every board env.** Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All four report SUCCESS. Tasks 1 and 2 share commit 2: "Multi-board PlatformIO layout on Arduino-ESP32 3.x".
 
 ### Task 3: lib/input, lib/store and lib/ble_hid with native tests
 
@@ -413,7 +413,7 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
   - The CLI `package_firmware.py --output DIR --version V [--commit SHA] [--env E ...]`. It defaults to every env whose `custom_board` id equals its env name, which excludes `sticks3-macro`.
   - `firmware/index.json` and `firmware/<id>/{manifest.json,*.bin}`, as given in **Interfaces**.
 
-- [ ] **Step 1: Write the failing tests.** Use synthetic images and partition tables, as today.
+- [x] **Step 1: Write the failing tests.** Use synthetic images and partition tables, as today.
   - **Offsets:** a classic ESP32 bootloader gets offset `0x1000`, and the S3 and C3 bootloaders get `0x0`.
   - **Partition-derived offsets:** the `boot_app0` offset equals the otadata offset, and the firmware offset equals the first app partition, both read from `partitions.bin`.
   - **NVS overlap:** a part whose sector-rounded range overlaps NVS raises `overlaps NVS`.
@@ -422,8 +422,8 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
   - **Improv wait:** `new_install_improv_wait_time == 0` when the config has wifi disabled.
   - **No secrets:** when a `secrets.yaml` exists, the dumped `index.json` contains none of its values.
   - **Atomic output:** if any board fails, nothing is written to the output.
-- [ ] **Step 2: Run the tests and see them fail.** Run `python -m unittest scripts.tests.test_packaging -v`. The tests fail.
-- [ ] **Step 3: Implement the packager.** Parameterize today's validations by chip. The parser for each chip comes from PlatformIO's vendored esptool (`ESP32FirmwareImage`, `ESP32S3FirmwareImage` and `ESP32C3FirmwareImage`), and the checksum and SHA checks are kept. Stage the output in a temporary directory and rename it into place.
+- [x] **Step 2: Run the tests and see them fail.** Run `python -m unittest scripts.tests.test_packaging -v`. The tests fail.
+- [x] **Step 3: Implement the packager.** Parameterize today's validations by chip. The parser for each chip comes from PlatformIO's vendored esptool (`ESP32FirmwareImage`, `ESP32S3FirmwareImage` and `ESP32C3FirmwareImage`), and the checksum and SHA checks are kept. Stage the output in a temporary directory and rename it into place.
 - [ ] **Step 4: Run the tests and package the real builds.**
   - Run `python -m unittest scripts.tests.test_packaging -v` and the real packaging run, `python scripts/package_firmware.py --output web/public/firmware --version 0.0.0-dev`.
   - The tests pass.
@@ -466,13 +466,13 @@ This task can run in parallel with Tasks 1 to 8, because it consumes only the `i
 - Boards: `.board-grid`, `.board-card`, `.board-meta`
 - Content: `.feature-grid`, `.steps`, `.hero`, `.eyebrow`, `.muted`, `.note`
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `readIndex` returns null for a missing directory.
   - With the fixture, it returns boards in file order.
   - `boardSummary` gives `"ESP32-S3 · 2 buttons · display · battery"` for the sticks3 board in the fixture, and `"ESP32 · 1 button"` for esp32.
   - `check-firmware` exits 0 with the "no release" log line on an empty directory and exits 1 on a hash mismatch.
-- [ ] **Step 2: Run the tests and see them fail.** Run `cd web && npm install && npm test`. The tests fail.
-- [ ] **Step 3: Implement `project.ts` and the components.**
+- [x] **Step 2: Run the tests and see them fail.** Run `cd web && npm install && npm test`. The tests fail.
+- [x] **Step 3: Implement `project.ts` and the components.**
   - `InstallCard` renders `<esp-web-install-button manifest={base + board.manifest}>` with an `activate` slot `.btn.btn-primary` and `unsupported` and `not-allowed` slot notes. It imports the element in a client `<script>`.
   - When the index is null, the page shows the Hero and a `.note` reading "No release published yet. Build locally with `pio run`, or publish a release to enable browser install."
   - The page copy mentions that release builds have OTA disabled.
@@ -485,15 +485,15 @@ This task runs in parallel with Task 9 and owns `web/src/styles/`.
 **Files:**
 - Replace: `web/src/styles/theme.css` with `web/src/styles/{tokens,base,layout,components}.css` and `web/src/styles/index.css` (imports only). Each file stays at or under 300 lines.
 
-- [ ] **Step 1: Write the tokens.**
+- [x] **Step 1: Write the tokens.**
   - `tokens.css` defines the color tokens on `:root`, in today's palette as the dark theme plus a light theme under `prefers-color-scheme: light`.
   - It adds the scales `--space-1..6`, `--text-xs..xl`, `--track-tight|wide` and `--radius`.
   - No literal colors appear outside `tokens.css`.
-- [ ] **Step 2: Style the class vocabulary from Task 9.**
+- [x] **Step 2: Style the class vocabulary from Task 9.**
   - Fold today's late override blocks and their four separate `details` treatments into one `.disclosure` rule.
   - Put each media query next to the rule it modifies.
   - Responsive down to 360 px, with no horizontal scroll.
-- [ ] **Step 3: Check the result.**
+- [x] **Step 3: Check the result.**
   - Run `grep -c '#[0-9a-fA-F]\{3,6\}' web/src/styles/{base,layout,components}.css`, which gives 0 per file, and `wc -l web/src/styles/*.css`, where every file is at or under 300.
   - Take Playwright screenshots of `npm run preview` at 1280 px and 390 px, then review them.
   - Commit 9: "Split site styles into tokens, base, layout and components".
