@@ -541,8 +541,8 @@ This task runs in parallel with Task 9 and owns `web/src/styles/`.
 
 ### Task 13: Whole-branch review and verification
 
-- [ ] **Step 1: Review.** Run the feature-dev code-reviewer on `git diff c3e723e..HEAD`, and fix the confirmed findings.
-- [ ] **Step 2: Verify everything.**
+- [x] **Step 1: Review.** Run the feature-dev code-reviewer on `git diff c3e723e..HEAD`, and fix the confirmed findings.
+- [x] **Step 2: Verify everything.**
   - Run `.venv/bin/pio run` for every env from `scripts/list_envs.py`.
   - Run `bash scripts/check.sh`.
   - Package the builds.

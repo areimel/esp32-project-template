@@ -27,9 +27,14 @@ size match the env, and close serial monitors. Port names are examples.
   Stick-S3 first time; 1 misdetected, restarted once and then detected it
   (`Stick-S3 detected after 1 restart(s)`). Whether a cold power-on misdetects
   is not yet observed.
+- 2026-11-23, same device, env `sticks3-macro`, build `v0.1.0-41-g73e075d`,
+  observed by Claude over USB serial: the macro example boots and prints
+  `Stick-S3 Macro ... on M5Stack Stick-S3, profiles=4`,
+  `BLE advertising: Stick-S3 Macro`, `Active profile 1: CLAUDE` and a battery
+  reading.
 
-Display, pairing, typing, buttons, bond reset, Improv provisioning, OTA, the
-macro example and all other boards remain pending.
+Display, pairing, typing, buttons, gestures, the picker, bond reset, Improv
+provisioning, OTA and all other boards remain pending.
 
 ## All boards
 
