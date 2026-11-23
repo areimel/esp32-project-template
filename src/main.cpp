@@ -38,7 +38,7 @@ bool charging = false;
 const char* lastAction = "";
 uint32_t ledOffAt = 0;
 bool ledOn = false;
-bool wasUpdating = true;  // forces a gesture reset on the first loop pass
+bool wasUpdating = true;  // forces a gesture reset on first loop
 #if FEATURE_BLE_HID
 BleKeyboard keyboard;
 uint32_t lastGeneration = 0;
@@ -133,8 +133,7 @@ void setup() {
   display.splash(AppConfig::PROJECT_NAME, FIRMWARE_VERSION);
 #endif
 #if FEATURE_BLE_HID
-  // begin() first: clearing bonds needs NimBLE up. Holding all buttons at boot
-  // clears bonds before the screen says so.
+  // begin() first (clearing bonds needs NimBLE); bonds clear before the screen says so.
   keyboard.begin(AppConfig::BLE_NAME, AppConfig::KEYSTROKE_MS);
   holdAllButtonsAtBoot(
       kBondHoldMs,
@@ -144,10 +143,7 @@ void setup() {
 #endif
         (void)remaining;
       },
-      [] {
-        keyboard.clearBonds();
-        LOG_I("Bluetooth bonds cleared; forget the device on the host and re-pair");
-      });
+      [] { keyboard.clearBonds(); LOG_I("Bluetooth bonds cleared; forget the device and re-pair"); });
 #endif
 #if FEATURE_WIFI
   net::beginWifi(AppConfig::WIFI_HOSTNAME, AppConfig::DEV_WIFI_SSID, AppConfig::DEV_WIFI_PASSWORD);
