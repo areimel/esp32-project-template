@@ -1,6 +1,8 @@
 # Board capability table. A PlatformIO env selects a row with `custom_board = <id>`
 # (default: the env name). Build facts (partitions, flash, memory) live in
 # platformio.ini; this file only describes what the hardware has.
+# The gpio boards' only button is BOOT, a strapping pin: held during reset it enters ROM
+# download mode, so boot holds start right after reset (see lib/board/src/BootHold.h).
 sticks3: {label: "M5Stack Stick-S3", chip: ESP32-S3, driver: m5, buttons: 2, display: true, battery: true}
 esp32s3: {label: "ESP32-S3 DevKitC-1", chip: ESP32-S3, driver: gpio, button_pins: [0], led: {pin: 48, rgb: true}, display: false, battery: false}
 esp32c3: {label: "ESP32-C3 DevKitM-1", chip: ESP32-C3, driver: gpio, button_pins: [9], led: {pin: 8, rgb: true}, display: false, battery: false}
