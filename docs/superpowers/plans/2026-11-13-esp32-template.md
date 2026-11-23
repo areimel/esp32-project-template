@@ -351,7 +351,7 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 
 **Interfaces:** Consumes everything from Tasks 2 to 5 and `AppConfig::BUTTON_ACTIONS`.
 
-- [ ] **Step 1: Write `main.cpp`.**
+- [x] **Step 1: Write `main.cpp`.**
   - Keep the patterns from today's `main.cpp`: module instances in an anonymous namespace, `handle(event)`, the `model()` diff redraw, and `Every` for the battery (30 s) and the idle redraw.
   - Startup order:
     1. Serial.
@@ -366,7 +366,7 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
     - A gesture whose action is assigned, while `keyboard.ready()`, calls `keyboard.send(mods, usage)` and blinks the LED.
     - Input received while not ready is discarded, as today.
     - While `otaActive()`, the loop skips input and calls `keyboard.releaseAll()`.
-- [ ] **Step 2: Build every env.** Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All report SUCCESS. Commit 5: "Display module and minimal default app wiring all modules".
+- [x] **Step 2: Build every env.** Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All report SUCCESS. Commit 5: "Display module and minimal default app wiring all modules".
 
 ### Task 7: Macro clicker example
 
