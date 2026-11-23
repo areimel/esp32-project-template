@@ -7,7 +7,7 @@ import yaml
 
 from support import make_ctx, default_config
 from config.core import ConfigError, UniqueKeyLoader, cstr, fields, integer, load_secrets, write_if_changed
-from generate_config import render
+from generate_config import generate, render
 
 
 class CoreTests(unittest.TestCase):
@@ -76,10 +76,46 @@ class CoreTests(unittest.TestCase):
             self.assertIn("secrets.yaml", str(caught.exception))
             self.assertIn("malformed YAML", str(caught.exception))
 
+    def test_malformed_secrets_error_never_echoes_the_secret(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "secrets.yaml"
+            for text in ('wifi_ssid: home\nota_password: "topsecretpw\n',
+                         "ota_password: topsecretpw: more\n",
+                         "ota_password: topsecretpw\n\tbad: indent\n"):
+                with self.subTest(text=text):
+                    path.write_text(text, encoding="utf-8")
+                    with self.assertRaises(ConfigError) as caught:
+                        load_secrets(path)
+                    message = str(caught.exception)
+                    self.assertNotIn("topsecretpw", message)
+                    self.assertIn("secrets.yaml", message)
+                    self.assertRegex(message, r"malformed YAML at line \d+, column \d+")
+                    # The PyYAML exception (whose text quotes the source) is not chained either.
+                    self.assertIsNone(caught.exception.__cause__)
+                    self.assertTrue(caught.exception.__suppress_context__)
+
+    def test_generate_error_names_file_once(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "config.yaml"
+            path.write_text("name: [unclosed\n", encoding="utf-8")
+            with self.assertRaises(ConfigError) as caught:
+                generate(path, Path(tmp) / "out.h", make_ctx())
+            self.assertEqual(str(caught.exception).count(str(path)), 1)
+            self.assertIn("malformed YAML", str(caught.exception))
+
+    def test_non_utf8_config_is_a_config_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "config.yaml"
+            path.write_bytes(b"name: \xff\xfe\n")
+            with self.assertRaises(ConfigError) as caught:
+                generate(path, Path(tmp) / "out.h", make_ctx())
+            self.assertIn("UTF-8", str(caught.exception))
+            self.assertEqual(str(caught.exception).count(str(path)), 1)
+
     def test_schema_hook(self):
         with tempfile.TemporaryDirectory() as tmp:
             Path(tmp, "extra.py").write_text(
-                "KEY='extra'\nREQUIRED=False\nDEFAULT=None\nINCLUDES=[]\n"
+                "KEY='extra'\nREQUIRED=False\nDEFAULT=None\n"
                 "def validate(v, ctx): return v\n"
                 "def emit(cfg, ctx): return ['constexpr int EXTRA = 7;']\n", encoding="utf-8")
             data = default_config()

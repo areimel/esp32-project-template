@@ -213,7 +213,7 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 - Produces: `keys.parse_combo(value, path) -> (mods, usage)` and `keys.MODIFIERS`, `keys.KEYS` and `keys.ASCII`, moved from `generate_config.py`.
 - Produces: `scripts/list_envs.py`, which prints a JSON array of every `[env:*]` name except `native`.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
   - In `test_config_core`:
     - duplicate YAML keys are rejected;
     - non-string keys are rejected;
@@ -228,14 +228,14 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
   - Secrets:
     - A `ctx.secrets` of `{}` with `ota.enabled: true` yields no `OTA_PASSWORD` in the header, and the warnings include `OTA disabled: no ota_password in secrets.yaml`.
     - A secrets file with keys other than `ota_password`, `wifi_ssid` and `wifi_password` is rejected.
-- [ ] **Step 2: Run the tests and see them fail.** Run `python -m unittest discover -s scripts/tests -v`. The tests fail with `ModuleNotFoundError: config`.
-- [ ] **Step 3: Implement `scripts/config/core.py`.** It defines `UniqueKeyLoader`, `ConfigError(path, msg)`, `fields`, `integer`, `cstr`, `write_if_changed`, `Context` and `load_sections(data) -> list[module]`. The last loads the built-ins plus `data["schema"]`, resolved relative to the config file. Then implement the section modules and `render(data, ctx) -> (header: str, features: dict[str, bool])`.
-- [ ] **Step 4: Rewrite `scripts/platformio_config.py`.** Its job:
+- [x] **Step 2: Run the tests and see them fail.** Run `python -m unittest discover -s scripts/tests -v`. The tests fail with `ModuleNotFoundError: config`.
+- [x] **Step 3: Implement `scripts/config/core.py`.** It defines `UniqueKeyLoader`, `ConfigError(path, msg)`, `fields`, `integer`, `cstr`, `write_if_changed`, `Context` and `load_sections(data) -> list[module]`. The last loads the built-ins plus `data["schema"]`, resolved relative to the config file. Then implement the section modules and `render(data, ctx) -> (header: str, features: dict[str, bool])`.
+- [x] **Step 4: Rewrite `scripts/platformio_config.py`.** Its job:
   - Skip entirely when `env["PIOPLATFORM"] == "native"`.
   - Resolve `custom_config` (default `config.yaml`) and `custom_board` (default `env["PIOENV"]`), and read `boards/boards.yaml` and the optional `secrets.yaml`.
   - Generate the header into `$BUILD_DIR/generated/`.
   - Append the CPPPATH and the CPPDEFINES, and print the warnings.
-- [ ] **Step 5: Restructure `platformio.ini`.**
+- [x] **Step 5: Restructure `platformio.ini`.**
   - `[platformio] extra_configs = platformio_override.ini`. Confirm that a missing file is tolerated. If it is not, document copying the `.example` file instead.
   - `[env]`:
     - `platform = <pioarduino stable release zip URL, exact tag>`
@@ -248,8 +248,8 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
     - `esp32c3` uses `esp32-c3-devkitm-1`.
     - `esp32` uses `esp32dev`.
   - `[env:native]`: `platform = native`, `test_framework = unity`, empty `lib_deps`, `lib_ignore = board, net, display, store`, `build_flags = -std=gnu++17 -Itest/stubs -Iexamples/macro-clicker/include`.
-- [ ] **Step 6: Run the tests and see them pass.** Run `python -m unittest discover -s scripts/tests -v`. All tests pass.
-- [ ] **Step 7: Confirm that each board env reaches compilation.**
+- [x] **Step 6: Run the tests and see them pass.** Run `python -m unittest discover -s scripts/tests -v`. All tests pass.
+- [x] **Step 7: Confirm that each board env reaches compilation.**
   - Use a temporary `src/main.cpp` that only includes `generated_config.h`, logs `BOARD_LABEL`, and stays in `loop` doing `delay(1)`.
   - Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All four report SUCCESS.
   - `include/` keeps the old headers until Tasks 2 to 7 move them. Old `src/*.cpp` files that no longer compile go behind `build_src_filter = +<main.cpp>` in `[env]` for now.
@@ -265,15 +265,15 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 
 **Interfaces:** Consumes the Task 1 CPPDEFINES. Produces `Every`, `LOG_*`, `board::*` and `holdAllButtonsAtBoot`, as given in **Interfaces**.
 
-- [ ] **Step 1: Write the failing test.** In `test_every`:
+- [x] **Step 1: Write the failing test.** In `test_every`:
   - `Every e(100)`: `due(0)` is true, `due(50)` is false, `due(100)` is true, and `due(150)` is false.
   - The wrap case: `Every w(10)` with `due(0xFFFFFFF8)` true, then `due(2)` true.
-- [ ] **Step 2: Run the test and see it fail.** Run `.venv/bin/pio test -e native -f test_every`. It fails because `Every.h` is not found.
-- [ ] **Step 3: Implement `Every.h`, `Log.h`, `Board.h` and its two drivers, and `BootHold.h`.**
+- [x] **Step 2: Run the test and see it fail.** Run `.venv/bin/pio test -e native -f test_every`. It fails because `Every.h` is not found.
+- [x] **Step 3: Implement `Every.h`, `Log.h`, `Board.h` and its two drivers, and `BootHold.h`.**
   - `BoardM5.cpp` (`#if BOARD_DRIVER_M5`) moves the M5 config, button and power code out of today's `main.cpp`. If `M5.getBoard() != board_M5StickS3` it logs a warning but does not halt.
   - `BoardGpio.cpp` (`#if BOARD_DRIVER_GPIO`) treats buttons as active-low with `INPUT_PULLUP`.
-- [ ] **Step 4: Run the test and see it pass.** Run `.venv/bin/pio test -e native -f test_every`. It passes.
-- [ ] **Step 5: Build every board env.** Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All four report SUCCESS. Tasks 1 and 2 share commit 2: "Multi-board PlatformIO layout on Arduino-ESP32 3.x".
+- [x] **Step 4: Run the test and see it pass.** Run `.venv/bin/pio test -e native -f test_every`. It passes.
+- [x] **Step 5: Build every board env.** Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All four report SUCCESS. Tasks 1 and 2 share commit 2: "Multi-board PlatformIO layout on Arduino-ESP32 3.x".
 
 ### Task 3: lib/input, lib/store and lib/ble_hid with native tests
 
@@ -289,14 +289,14 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 - Consumes: the `FEATURE_BLE_HID` guard.
 - Produces: `Gesture` (unchanged), `BleKeyboard` and `Settings`.
 
-- [ ] **Step 1: Convert the tests.**
+- [x] **Step 1: Convert the tests.**
   - Each top-level `{ ... }` block in `main()` becomes a named Unity test: `test_tap_without_double`, `test_double_window` and so on, named after what each block asserts.
   - `assert(x)` becomes `TEST_ASSERT_TRUE(x)`.
   - Add `setUp`, `tearDown` and `main` with `UNITY_BEGIN`, `RUN_TEST` and `UNITY_END`.
   - Every existing assertion stays.
-- [ ] **Step 2: Run the tests.** Run `.venv/bin/pio test -e native -f test_gesture -f test_ble`. All tests pass, with the same case count as the old asserts. `test_ble` compiles `BleKeyboard.cpp` against `test/stubs`, with `FEATURE_BLE_HID=1` defined in `[env:native]` build_flags.
-- [ ] **Step 3: Implement `Settings`.** Use `Preferences` with namespace `ns`, opened read-write for each call. `putU8` reads first and returns true without writing when the value is unchanged.
-- [ ] **Step 4: Build `sticks3` and `esp32c3`.** Run `.venv/bin/pio run -e sticks3 -e esp32c3`. Both report SUCCESS. Commit 3: "Input, settings and BLE HID modules with native tests".
+- [x] **Step 2: Run the tests.** Run `.venv/bin/pio test -e native -f test_gesture -f test_ble`. All tests pass, with the same case count as the old asserts. `test_ble` compiles `BleKeyboard.cpp` against `test/stubs`, with `FEATURE_BLE_HID=1` defined in `[env:native]` build_flags.
+- [x] **Step 3: Implement `Settings`.** Use `Preferences` with namespace `ns`, opened read-write for each call. `putU8` reads first and returns true without writing when the value is unchanged.
+- [x] **Step 4: Build `sticks3` and `esp32c3`.** Run `.venv/bin/pio run -e sticks3 -e esp32c3`. Both report SUCCESS. Commit 3: "Input, settings and BLE HID modules with native tests".
 
 ### Task 4: lib/improv and lib/net (WiFi, Improv Serial, dev OTA)
 
@@ -308,7 +308,7 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 
 **Interfaces:** Consumes `FEATURE_WIFI` and `FEATURE_OTA`, and the `AppConfig::WIFI_HOSTNAME`, `DEV_WIFI_*` and `OTA_PASSWORD` values. Produces the `Improv*` and `net::*` APIs given in **Interfaces**.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - First, re-read https://www.improv-wifi.com/serial/ to confirm the header (`IMPROV`, version `1`, type, length, data, checksum = low byte of the sum of all preceding bytes), the RPC layout (command, length, payload) and the WiFi payload (ssid_len, ssid, pass_len, pass).
   - The test cases:
     - **`test_roundtrip_state`:** `improvFrame(CurrentState, {2})` is parsed back by `ImprovParser` with type 1 and data `{2}`.
@@ -317,14 +317,14 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
     - **`test_truncated_length`:** a frame whose declared length runs past the data, followed by a valid frame, parses only the valid one.
     - **`test_wifi_settings`:** an RPC payload for SSID `"home"` and password `"p@ss"` parses to those strings. An SSID longer than the cap returns false.
     - **`test_rpc_result`:** `improvRpcResult(GetInfo, {"ESP32 Starter","v1.0.0","ESP32-S3","Stick"}, 4)` encodes a total length followed by each string's length and bytes.
-- [ ] **Step 2: Run the tests and see them fail.** Run `.venv/bin/pio test -e native -f test_improv`. The tests fail.
-- [ ] **Step 3: Implement `Improv.cpp`.** It is a pure state machine that matches the header byte by byte and restarts on a mismatch. Its total size must stay at or under 200 lines.
-- [ ] **Step 4: Run the tests and see them pass.** Run `.venv/bin/pio test -e native -f test_improv`. All tests pass.
-- [ ] **Step 5: Implement `Wifi.cpp`, `ImprovSerial.cpp` and `Ota.cpp`.**
+- [x] **Step 2: Run the tests and see them fail.** Run `.venv/bin/pio test -e native -f test_improv`. The tests fail.
+- [x] **Step 3: Implement `Improv.cpp`.** It is a pure state machine that matches the header byte by byte and restarts on a mismatch. Its total size must stay at or under 200 lines.
+- [x] **Step 4: Run the tests and see them pass.** Run `.venv/bin/pio test -e native -f test_improv`. All tests pass.
+- [x] **Step 5: Implement `Wifi.cpp`, `ImprovSerial.cpp` and `Ota.cpp`.**
   - `Wifi.cpp` is non-blocking. It sets `WiFi.persistent(true)` and `setHostname`, and reconnects every 10 s while disconnected.
   - `ImprovSerial` answers `GetState`, `GetInfo` and `WifiSettings`. For `WifiSettings` it connects with a 15 s timeout, replies with `http://<ip>`, and sends `UnableToConnect` on timeout.
   - `Ota.cpp` uses ArduinoOTA with the hostname and password. It logs progress, and `otaActive()` is true from onStart until onEnd or onError.
-- [ ] **Step 6: Build every board env.** Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All report SUCCESS.
+- [x] **Step 6: Build every board env.** Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All report SUCCESS.
   - Also build once with a local `secrets.yaml` containing `ota_password: test` and confirm the build log shows no "OTA disabled" warning.
   - Delete that `secrets.yaml` afterwards.
   - Commit 4: "WiFi with Improv provisioning and dev-only LAN OTA".
@@ -339,8 +339,8 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 - Consumes: `board::display()` and `FEATURE_DISPLAY`.
 - Produces: the `Display` class. Its `header`, `splash`, `holdProgress` and `fatal` drawing is extracted from today's `src/Ui.cpp`, which is the header and battery chrome, the boot screen and the bond-reset screen.
 
-- [ ] **Step 1: Implement `Display`.** Lift the drawing code verbatim where possible, without changing colors or layout. `Display.cpp` stays at or under 200 lines.
-- [ ] **Step 2: Build `sticks3`.** Run `.venv/bin/pio run -e sticks3`. It reports SUCCESS.
+- [x] **Step 1: Implement `Display`.** Lift the drawing code verbatim where possible, without changing colors or layout. `Display.cpp` stays at or under 200 lines.
+- [x] **Step 2: Build `sticks3`.** Run `.venv/bin/pio run -e sticks3`. It reports SUCCESS.
 
 ### Task 6: Minimal default app
 
@@ -351,7 +351,7 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 
 **Interfaces:** Consumes everything from Tasks 2 to 5 and `AppConfig::BUTTON_ACTIONS`.
 
-- [ ] **Step 1: Write `main.cpp`.**
+- [x] **Step 1: Write `main.cpp`.**
   - Keep the patterns from today's `main.cpp`: module instances in an anonymous namespace, `handle(event)`, the `model()` diff redraw, and `Every` for the battery (30 s) and the idle redraw.
   - Startup order:
     1. Serial.
@@ -366,7 +366,7 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
     - A gesture whose action is assigned, while `keyboard.ready()`, calls `keyboard.send(mods, usage)` and blinks the LED.
     - Input received while not ready is discarded, as today.
     - While `otaActive()`, the loop skips input and calls `keyboard.releaseAll()`.
-- [ ] **Step 2: Build every env.** Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All report SUCCESS. Commit 5: "Display module and minimal default app wiring all modules".
+- [x] **Step 2: Build every env.** Run `.venv/bin/pio run -e sticks3 -e esp32s3 -e esp32c3 -e esp32`. All report SUCCESS. Commit 5: "Display module and minimal default app wiring all modules".
 
 ### Task 7: Macro clicker example
 
@@ -390,13 +390,13 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
 - Consumes: `keys.parse_combo` and `keys.ASCII` from Task 1, the section contract, `Settings`, `BleKeyboard`, `Display` and `board::*`.
 - Produces: the `profiles` section (`KEY = "profiles"`, `INCLUDES = ["Macro.h"]`), whose header output is byte-identical to today's profile arrays.
 
-- [ ] **Step 1: Port the tests.** Port the controller, player and profile-schema tests with every existing assertion. Run `.venv/bin/pio test -e native -f "test_macro_*"` and `python -m unittest scripts.tests.test_macro_schema`. Both fail until the files move.
-- [ ] **Step 2: Move the code.**
+- [x] **Step 1: Port the tests.** Port the controller, player and profile-schema tests with every existing assertion. Run `.venv/bin/pio test -e native -f "test_macro_*"` and `python -m unittest scripts.tests.test_macro_schema`. Both fail until the files move.
+- [x] **Step 2: Move the code.**
   - Move the code and rename it to `BleKeyboard`. `ProfileStore` wraps `Settings("macro")` with today's clamp.
   - `Ui.cpp` uses the `Display` chrome and keeps its Home, Picker and Transmit screens.
   - `examples/macro-clicker/config.yaml` is today's config.yaml in the new section format, with `wifi` and `ota` disabled and `schema: config_schema.py`.
-- [ ] **Step 3: Run the tests and see them pass.** Rerun both commands from Step 1. All tests pass.
-- [ ] **Step 4: Build the macro env.** Run `.venv/bin/pio run -e sticks3-macro`. It reports SUCCESS. Commit 6: "Move macro clicker into examples/macro-clicker".
+- [x] **Step 3: Run the tests and see them pass.** Rerun both commands from Step 1. All tests pass.
+- [x] **Step 4: Build the macro env.** Run `.venv/bin/pio run -e sticks3-macro`. It reports SUCCESS. Commit 6: "Move macro clicker into examples/macro-clicker".
 
 ### Task 8: Board-driven packaging
 
@@ -413,7 +413,7 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
   - The CLI `package_firmware.py --output DIR --version V [--commit SHA] [--env E ...]`. It defaults to every env whose `custom_board` id equals its env name, which excludes `sticks3-macro`.
   - `firmware/index.json` and `firmware/<id>/{manifest.json,*.bin}`, as given in **Interfaces**.
 
-- [ ] **Step 1: Write the failing tests.** Use synthetic images and partition tables, as today.
+- [x] **Step 1: Write the failing tests.** Use synthetic images and partition tables, as today.
   - **Offsets:** a classic ESP32 bootloader gets offset `0x1000`, and the S3 and C3 bootloaders get `0x0`.
   - **Partition-derived offsets:** the `boot_app0` offset equals the otadata offset, and the firmware offset equals the first app partition, both read from `partitions.bin`.
   - **NVS overlap:** a part whose sector-rounded range overlaps NVS raises `overlaps NVS`.
@@ -422,9 +422,9 @@ Each board's `<id>/manifest.json` (ESP Web Tools format):
   - **Improv wait:** `new_install_improv_wait_time == 0` when the config has wifi disabled.
   - **No secrets:** when a `secrets.yaml` exists, the dumped `index.json` contains none of its values.
   - **Atomic output:** if any board fails, nothing is written to the output.
-- [ ] **Step 2: Run the tests and see them fail.** Run `python -m unittest scripts.tests.test_packaging -v`. The tests fail.
-- [ ] **Step 3: Implement the packager.** Parameterize today's validations by chip. The parser for each chip comes from PlatformIO's vendored esptool (`ESP32FirmwareImage`, `ESP32S3FirmwareImage` and `ESP32C3FirmwareImage`), and the checksum and SHA checks are kept. Stage the output in a temporary directory and rename it into place.
-- [ ] **Step 4: Run the tests and package the real builds.**
+- [x] **Step 2: Run the tests and see them fail.** Run `python -m unittest scripts.tests.test_packaging -v`. The tests fail.
+- [x] **Step 3: Implement the packager.** Parameterize today's validations by chip. The parser for each chip comes from PlatformIO's vendored esptool (`ESP32FirmwareImage`, `ESP32S3FirmwareImage` and `ESP32C3FirmwareImage`), and the checksum and SHA checks are kept. Stage the output in a temporary directory and rename it into place.
+- [x] **Step 4: Run the tests and package the real builds.**
   - Run `python -m unittest scripts.tests.test_packaging -v` and the real packaging run, `python scripts/package_firmware.py --output web/public/firmware --version 0.0.0-dev`.
   - The tests pass.
   - The run prints one line per board, and 4 manifests exist.
@@ -466,17 +466,17 @@ This task can run in parallel with Tasks 1 to 8, because it consumes only the `i
 - Boards: `.board-grid`, `.board-card`, `.board-meta`
 - Content: `.feature-grid`, `.steps`, `.hero`, `.eyebrow`, `.muted`, `.note`
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `readIndex` returns null for a missing directory.
   - With the fixture, it returns boards in file order.
   - `boardSummary` gives `"ESP32-S3 · 2 buttons · display · battery"` for the sticks3 board in the fixture, and `"ESP32 · 1 button"` for esp32.
   - `check-firmware` exits 0 with the "no release" log line on an empty directory and exits 1 on a hash mismatch.
-- [ ] **Step 2: Run the tests and see them fail.** Run `cd web && npm install && npm test`. The tests fail.
-- [ ] **Step 3: Implement `project.ts` and the components.**
+- [x] **Step 2: Run the tests and see them fail.** Run `cd web && npm install && npm test`. The tests fail.
+- [x] **Step 3: Implement `project.ts` and the components.**
   - `InstallCard` renders `<esp-web-install-button manifest={base + board.manifest}>` with an `activate` slot `.btn.btn-primary` and `unsupported` and `not-allowed` slot notes. It imports the element in a client `<script>`.
   - When the index is null, the page shows the Hero and a `.note` reading "No release published yet. Build locally with `pio run`, or publish a release to enable browser install."
   - The page copy mentions that release builds have OTA disabled.
-- [ ] **Step 4: Run the checks.** Run `npm test && npm run check && npm run build`, first with `web/public/firmware` absent and then with the Task 8 output present. Both runs succeed. Commit 8: "Rebuild microsite on ESP Web Tools with shared components".
+- [x] **Step 4: Run the checks.** Run `npm test && npm run check && npm run build`, first with `web/public/firmware` absent and then with the Task 8 output present. Both runs succeed. Commit 8: "Rebuild microsite on ESP Web Tools with shared components".
 
 ### Task 10: Site styles split
 
@@ -485,15 +485,15 @@ This task runs in parallel with Task 9 and owns `web/src/styles/`.
 **Files:**
 - Replace: `web/src/styles/theme.css` with `web/src/styles/{tokens,base,layout,components}.css` and `web/src/styles/index.css` (imports only). Each file stays at or under 300 lines.
 
-- [ ] **Step 1: Write the tokens.**
+- [x] **Step 1: Write the tokens.**
   - `tokens.css` defines the color tokens on `:root`, in today's palette as the dark theme plus a light theme under `prefers-color-scheme: light`.
   - It adds the scales `--space-1..6`, `--text-xs..xl`, `--track-tight|wide` and `--radius`.
   - No literal colors appear outside `tokens.css`.
-- [ ] **Step 2: Style the class vocabulary from Task 9.**
+- [x] **Step 2: Style the class vocabulary from Task 9.**
   - Fold today's late override blocks and their four separate `details` treatments into one `.disclosure` rule.
   - Put each media query next to the rule it modifies.
   - Responsive down to 360 px, with no horizontal scroll.
-- [ ] **Step 3: Check the result.**
+- [x] **Step 3: Check the result.**
   - Run `grep -c '#[0-9a-fA-F]\{3,6\}' web/src/styles/{base,layout,components}.css`, which gives 0 per file, and `wc -l web/src/styles/*.css`, where every file is at or under 300.
   - Take Playwright screenshots of `npm run preview` at 1280 px and 390 px, then review them.
   - Commit 9: "Split site styles into tokens, base, layout and components".
@@ -519,7 +519,7 @@ This task runs in parallel with Task 9 and owns `web/src/styles/`.
     - deploys Pages.
   - Neither workflow contains a project name or env name literal.
 
-- [ ] **Step 1: Validate the workflows.** Run `python -c "import yaml,sys;[yaml.safe_load(open(f)) for f in sys.argv[1:]]" .github/workflows/*.yml .github/actions/setup/action.yml` and `bash scripts/check.sh`. Both exit 0. If `actionlint` is available, run it and expect 0 findings. Commit 10: "Reusable CI setup action and per-board build matrix".
+- [x] **Step 1: Validate the workflows.** Run `python -c "import yaml,sys;[yaml.safe_load(open(f)) for f in sys.argv[1:]]" .github/workflows/*.yml .github/actions/setup/action.yml` and `bash scripts/check.sh`. Both exit 0. If `actionlint` is available, run it and expect 0 findings. Commit 10: "Reusable CI setup action and per-board build matrix".
 
 ### Task 12: Docs and agent guide
 
@@ -532,7 +532,7 @@ This task runs in parallel with Task 9 and owns `web/src/styles/`.
   - `TODO.md`, as the remaining physical checks.
 - Move: the macro-specific README sections into `examples/macro-clicker/README.md`.
 
-- [ ] **Step 1: Check the docs against the code.**
+- [x] **Step 1: Check the docs against the code.**
   - Every config key documented in `configuration.md` exists in `scripts/config/sections/*.py`.
   - The validation limits match the code.
   - Every command in the docs has been run once in this session.
@@ -541,8 +541,8 @@ This task runs in parallel with Task 9 and owns `web/src/styles/`.
 
 ### Task 13: Whole-branch review and verification
 
-- [ ] **Step 1: Review.** Run the feature-dev code-reviewer on `git diff c3e723e..HEAD`, and fix the confirmed findings.
-- [ ] **Step 2: Verify everything.**
+- [x] **Step 1: Review.** Run the feature-dev code-reviewer on `git diff c3e723e..HEAD`, and fix the confirmed findings.
+- [x] **Step 2: Verify everything.**
   - Run `.venv/bin/pio run` for every env from `scripts/list_envs.py`.
   - Run `bash scripts/check.sh`.
   - Package the builds.

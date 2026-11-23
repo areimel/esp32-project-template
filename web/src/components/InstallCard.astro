@@ -1,6 +1,7 @@
 ---
 /* Classes: panel, panel-head, panel-tag, kv, kv-label, kv-value, board-meta, btn, btn-primary, note, muted */
 import { boardSummary, withBase, type Board } from "../lib/project";
+import { site } from "../content/site";
 import Panel from "./Panel.astro";
 import KeyValue from "./KeyValue.astro";
 interface Props {
@@ -12,7 +13,7 @@ const { board, version, hidden = false } = Astro.props;
 const manifest = withBase(`firmware/${board.manifest}`);
 ---
 
-<div data-install-for={board.id} hidden={hidden}>
+<div id={`install-${board.id}`} data-install-for={board.id} hidden={hidden}>
   <Panel tag="Install" title={board.label}>
     <p class="board-meta">{boardSummary(board)}</p>
     <KeyValue
@@ -26,14 +27,14 @@ const manifest = withBase(`firmware/${board.manifest}`);
         Install {board.label}
       </button>
       <p slot="unsupported" class="note">
-        This browser cannot flash over USB. Use Chrome, Edge or Opera on a desktop.
+        This browser cannot flash over USB. Use a Chromium-based browser with Web Serial, such as Chrome, Edge or Opera.
       </p>
       <p slot="not-allowed" class="note">
         Web Serial needs a secure page. Open this site over HTTPS.
       </p>
     </esp-web-install-button>
     <p class="muted">
-      Settings kept on the device survive a reflash unless you choose to erase.
+      {site.settingsNote}
     </p>
   </Panel>
 </div>

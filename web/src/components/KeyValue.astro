@@ -1,7 +1,7 @@
 ---
-/* Classes: kv, kv-label, kv-value */
+/* Classes: kv, kv-label, kv-value. An item with href links its label as a download. */
 interface Props {
-  items: { label: string; value: string; title?: string }[];
+  items: { label: string; value: string; title?: string; href?: string }[];
 }
 const { items } = Astro.props;
 ---
@@ -10,7 +10,9 @@ const { items } = Astro.props;
   {
     items.map((item) => (
       <>
-        <dt class="kv-label">{item.label}</dt>
+        <dt class="kv-label">
+          {item.href ? <a href={item.href} download>{item.label}</a> : item.label}
+        </dt>
         <dd class="kv-value" title={item.title}>
           {item.value}
         </dd>

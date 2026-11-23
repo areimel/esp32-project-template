@@ -40,7 +40,6 @@
   color: var(--dim);
 }
 main {
-  display: block;
   padding-bottom: var(--space-5);
 }
 

@@ -3,7 +3,6 @@ from config.core import boolean, fields, integer
 
 KEY, REQUIRED = "display", False
 DEFAULT = {"enabled": False, "brightness": 64}
-INCLUDES = []
 
 
 def validate(value, ctx):

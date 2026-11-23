@@ -1,4 +1,4 @@
-name: Validate firmware and web flasher
+name: CI
 
 on:
   pull_request:
@@ -9,46 +9,57 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  envs:
+    runs-on: ubuntu-latest
+    outputs:
+      envs: ${{ steps.list.outputs.envs }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: echo "envs=$(python3 scripts/list_envs.py)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: envs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env: ${{ fromJson(needs.envs.outputs.envs) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Build firmware
+        env:
+          ENV: ${{ matrix.env }}
+        run: pio run -e "$ENV"
+
+  test:
+    needs: envs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-      - name: Install firmware tools
-        run: |
-          python -m venv .venv
-          .venv/bin/python -m pip install -r requirements.txt
-      - name: Build every board firmware and install its pinned image validation tools
-        run: |
-          for env in $(.venv/bin/python scripts/list_envs.py | .venv/bin/python -c "import json,sys;print(' '.join(json.load(sys.stdin)))"); do
-            .venv/bin/pio run -e "$env"
-          done
-      - name: Test configuration, packaging, gestures, and BLE
-        run: |
-          .venv/bin/python -m unittest discover -s scripts/tests -v
-          .venv/bin/pio test -e native
-          c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_gesture.cpp -o /tmp/sticks3-gesture-tests
-          /tmp/sticks3-gesture-tests
-          c++ -std=c++17 -Wall -Wextra -Werror -Itests/ble -Iinclude tests/test_ble.cpp src/BleKeyboard.cpp -o /tmp/sticks3-ble-tests
-          /tmp/sticks3-ble-tests
-          c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_controller.cpp -o /tmp/sticks3-controller-tests
-          /tmp/sticks3-controller-tests
-          c++ -std=c++11 -Wall -Wextra -Werror -Iinclude tests/test_player.cpp -o /tmp/sticks3-player-tests
-          /tmp/sticks3-player-tests
-      - name: Package firmware
-        run: |
-          .venv/bin/python scripts/package_firmware.py --version 0.0.0-dev --output web/public/firmware
-      - name: Test and build website
-        working-directory: web
+      - uses: ./.github/actions/setup
+      # Packaging and the packaging tests read build outputs, so this job builds
+      # every board itself (PlatformIO packages are cached) rather than passing
+      # artifacts between jobs.
+      - name: Build every board
         env:
-          BASE_PATH: /${{ github.event.repository.name }}/
+          ENVS: ${{ join(fromJson(needs.envs.outputs.envs), ' ') }}
+        run: |
+          for env in $ENVS; do pio run -e "$env"; done
+      - run: bash scripts/check.sh
+      - name: Packaging dry-run
+        run: python scripts/package_firmware.py --version 0.0.0-dev --output "$RUNNER_TEMP/firmware"
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          node: 'true'
+      - name: Install, check, test and build the site
+        working-directory: web
         run: |
           npm ci
           npm run check

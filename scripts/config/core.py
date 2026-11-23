@@ -51,10 +51,23 @@ def _mapping(loader, node, deep=False):
 UniqueKeyLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _mapping)
 
 
-def load_yaml(path):
+def _redacted(exc):
+    """Position and problem only: PyYAML's full message quotes the offending source line."""
+    mark = getattr(exc, "problem_mark", None)
+    where = f" at line {mark.line + 1}, column {mark.column + 1}" if mark else ""
+    problem = getattr(exc, "problem", None)
+    return f"malformed YAML{where}" + (f": {problem}" if problem else "")
+
+
+def load_yaml(path, redact=False):
+    """Parse a YAML file. With redact, errors never quote file contents (used for secrets.yaml)."""
     try:
         return yaml.load(Path(path).read_text(encoding="utf-8"), Loader=UniqueKeyLoader)
+    except UnicodeDecodeError as exc:
+        raise ConfigError(str(path), f"not valid UTF-8 text ({exc.reason} at byte {exc.start})") from exc
     except yaml.YAMLError as exc:
+        if redact:
+            raise ConfigError(str(path), _redacted(exc)) from None
         raise ConfigError(str(path), f"malformed YAML: {exc}") from exc
 
 
@@ -106,7 +119,7 @@ def load_secrets(path):
     path = Path(path)
     if not path.exists():
         return {}
-    secrets = load_yaml(path) or {}
+    secrets = load_yaml(path, redact=True) or {}
     fields(secrets, [], "secrets.yaml", SECRET_KEYS)
     for key, value in secrets.items():
         if not isinstance(value, str):

@@ -34,7 +34,7 @@ def render(data, ctx, base=Path(".")):
         features["FEATURE_OTA"] = False
         ctx.warnings.append("OTA disabled: wifi.enabled is false")
     ctx.features = features
-    includes = sorted({inc for m, _ in validated for inc in m.INCLUDES})
+    includes = sorted({inc for m, _ in validated for inc in getattr(m, "INCLUDES", ())})
     lines = [HEADER, "#pragma once", *[f"#include {inc}" for inc in includes], "",
              "namespace AppConfig {"]
     for module, cfg in validated:
@@ -49,7 +49,9 @@ def generate(source, destination, ctx):
     try:
         header, features = render(load_yaml(source), ctx, source.parent)
     except (ConfigError, yaml.YAMLError) as exc:
-        raise ConfigError("", f"Invalid {source}: {exc}") from exc
+        # load_yaml errors already name the file; print the path once.
+        detail = exc.msg if isinstance(exc, ConfigError) and exc.path == str(source) else exc
+        raise ConfigError("", f"Invalid {source}: {detail}") from exc
     write_if_changed(destination, header)
     return features
 

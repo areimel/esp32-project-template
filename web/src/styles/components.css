@@ -80,7 +80,7 @@
   text-transform: uppercase;
   letter-spacing: var(--track-wide);
 }
-.btn:hover {
+.btn:hover:not(:disabled) {
   background: var(--ink);
   color: var(--bg);
 }
@@ -89,7 +89,7 @@
   background: var(--accent);
   color: var(--accent-ink);
 }
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: var(--ink);
   border-color: var(--ink);
   color: var(--bg);
@@ -97,8 +97,7 @@
 .btn-ghost {
   border-color: var(--line);
 }
-.btn-ghost[aria-pressed="true"],
-.btn-ghost:hover {
+.btn-ghost:hover:not(:disabled) {
   border-color: var(--ink);
 }
 

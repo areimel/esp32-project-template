@@ -1,8 +1,9 @@
 ---
-/* Classes: section, section-title, disclosure, kv, kv-label, kv-value, btn, btn-ghost, muted */
+/* Classes: disclosure, kv, kv-label, kv-value, btn, btn-ghost, muted */
 import { withBase, type FirmwareIndex } from "../lib/project";
 import Disclosure from "./Disclosure.astro";
 import KeyValue from "./KeyValue.astro";
+import Section from "./Section.astro";
 interface Props {
   index: FirmwareIndex;
 }
@@ -10,8 +11,7 @@ const { index } = Astro.props;
 const base = withBase("firmware/");
 ---
 
-<section class="section" id="downloads">
-  <h2 class="section-title">Firmware files</h2>
+<Section id="downloads" title="Firmware files">
   <p class="muted">
     For command-line flashing and verification. Write each image at its listed
     offset.
@@ -37,19 +37,11 @@ const base = withBase("firmware/");
         <KeyValue
           items={board.parts.map((part) => ({
             label: `${part.path} @ 0x${part.offset.toString(16).toUpperCase()}`,
+            href: `${base}${part.path}`,
             value: `${part.size.toLocaleString("en-US")} bytes · ${part.sha256}`,
           }))}
         />
-        <ul>
-          {board.parts.map((part) => (
-            <li>
-              <a href={`${base}${part.path}`} download>
-                {part.path}
-              </a>
-            </li>
-          ))}
-        </ul>
       </Disclosure>
     ))
   }
-</section>
+</Section>

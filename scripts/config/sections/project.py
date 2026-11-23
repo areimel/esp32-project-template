@@ -2,7 +2,6 @@
 from config.core import ConfigError, cstr, fields, is_printable
 
 KEY, REQUIRED, DEFAULT = "project", True, None
-INCLUDES = []
 MAX_NAME = 32
 
 
