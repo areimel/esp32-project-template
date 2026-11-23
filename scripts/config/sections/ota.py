@@ -3,7 +3,6 @@ from config.core import boolean, cstr, fields
 
 KEY, REQUIRED = "ota", False
 DEFAULT = {"enabled": False}
-INCLUDES = []
 
 
 def validate(value, ctx):

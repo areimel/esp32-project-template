@@ -3,7 +3,6 @@ from config.core import ConfigError, fields, integer
 
 KEY, REQUIRED = "gestures", False
 DEFAULT = {"debounce_ms": 25, "double_click_ms": 250, "long_press_ms": 650}
-INCLUDES = []
 
 
 def validate(value, ctx):

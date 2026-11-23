@@ -1,14 +1,14 @@
 ---
-/* Classes: section, section-title, feature-grid, panel, panel-head, muted */
+/* Classes: feature-grid, panel, panel-head, muted */
 import Panel from "./Panel.astro";
+import Section from "./Section.astro";
 interface Props {
   features: { title: string; body: string }[];
 }
 const { features } = Astro.props;
 ---
 
-<section class="section" id="features">
-  <h2 class="section-title">What you get</h2>
+<Section id="features" title="What you get">
   <div class="feature-grid">
     {
       features.map((f) => (
@@ -18,4 +18,4 @@ const { features } = Astro.props;
       ))
     }
   </div>
-</section>
+</Section>

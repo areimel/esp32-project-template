@@ -3,7 +3,6 @@ from config.core import ConfigError, boolean, cstr, fields, integer
 
 KEY, REQUIRED = "ble", True
 DEFAULT = None
-INCLUDES = []
 
 
 def validate(value, ctx):

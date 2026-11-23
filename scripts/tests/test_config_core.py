@@ -97,7 +97,7 @@ class CoreTests(unittest.TestCase):
     def test_schema_hook(self):
         with tempfile.TemporaryDirectory() as tmp:
             Path(tmp, "extra.py").write_text(
-                "KEY='extra'\nREQUIRED=False\nDEFAULT=None\nINCLUDES=[]\n"
+                "KEY='extra'\nREQUIRED=False\nDEFAULT=None\n"
                 "def validate(v, ctx): return v\n"
                 "def emit(cfg, ctx): return ['constexpr int EXTRA = 7;']\n", encoding="utf-8")
             data = default_config()

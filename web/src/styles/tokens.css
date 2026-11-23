@@ -31,25 +31,14 @@
 }
 
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
+  :root {
     --bg: #f6f2e8;
     --panel: #fffdf7;
     --ink: #1d1b16;
     --dim: #655f52;
     --line: #d4cdbb;
-    --accent: #c93d00;
+    --accent: #b83700;
     --accent-ink: #fffdf7;
     color-scheme: light;
   }
-}
-
-:root[data-theme="light"] {
-  --bg: #f6f2e8;
-  --panel: #fffdf7;
-  --ink: #1d1b16;
-  --dim: #655f52;
-  --line: #d4cdbb;
-  --accent: #c93d00;
-  --accent-ink: #fffdf7;
-  color-scheme: light;
 }

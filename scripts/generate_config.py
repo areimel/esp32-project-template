@@ -34,7 +34,7 @@ def render(data, ctx, base=Path(".")):
         features["FEATURE_OTA"] = False
         ctx.warnings.append("OTA disabled: wifi.enabled is false")
     ctx.features = features
-    includes = sorted({inc for m, _ in validated for inc in m.INCLUDES})
+    includes = sorted({inc for m, _ in validated for inc in getattr(m, "INCLUDES", ())})
     lines = [HEADER, "#pragma once", *[f"#include {inc}" for inc in includes], "",
              "namespace AppConfig {"]
     for module, cfg in validated:

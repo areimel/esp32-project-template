@@ -1,14 +1,14 @@
 ---
-/* Classes: section, section-title, disclosure */
+/* Classes: disclosure */
 import Disclosure from "./Disclosure.astro";
+import Section from "./Section.astro";
 interface Props {
   faq: { q: string; a: string }[];
 }
 const { faq } = Astro.props;
 ---
 
-<section class="section" id="troubleshooting">
-  <h2 class="section-title">Troubleshooting</h2>
+<Section id="troubleshooting" title="Troubleshooting">
   {
     faq.map((item) => (
       <Disclosure summary={item.q}>
@@ -16,4 +16,4 @@ const { faq } = Astro.props;
       </Disclosure>
     ))
   }
-</section>
+</Section>

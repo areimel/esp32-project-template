@@ -1,14 +1,14 @@
 ---
-/* Classes: section, section-title, steps */
+/* Classes: steps */
+import Section from "./Section.astro";
 interface Props {
   steps: string[];
 }
 const { steps } = Astro.props;
 ---
 
-<section class="section" id="steps">
-  <h2 class="section-title">How to install</h2>
+<Section id="steps" title="How to install">
   <ol class="steps">
     {steps.map((step) => <li>{step}</li>)}
   </ol>
-</section>
+</Section>
