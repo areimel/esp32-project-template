@@ -97,7 +97,6 @@
 .btn-ghost {
   border-color: var(--line);
 }
-.btn-ghost[aria-pressed="true"],
 .btn-ghost:hover:not(:disabled) {
   border-color: var(--ink);
 }

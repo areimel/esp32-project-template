@@ -17,7 +17,9 @@ const home = withBase("");
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#141310" />
+    <!-- Literals: CSS variables cannot be used in meta tags; keep in step with --bg in tokens.css. -->
+    <meta name="theme-color" content="#f6f2e8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141310" media="(prefers-color-scheme: dark)" />
     <title>{name}</title>
     <link rel="icon" type="image/svg+xml" href={withBase("favicon.svg")} />
   </head>

@@ -1,3 +1,6 @@
+const otaNote =
+  "Release builds have OTA disabled. OTA is for local development builds, enabled by an ota_password in your own secrets.yaml.";
+
 /** Generic template copy. Project identity from firmware/index.json overrides `project`. */
 export const site = {
   project: {
@@ -14,8 +17,12 @@ export const site = {
       : undefined),
   noRelease:
     "No release published yet. Build locally with pio run, or publish a release to enable browser install.",
-  otaNote:
-    "Release builds have OTA disabled. OTA is for local development builds, enabled by an ota_password in your own secrets.yaml.",
+  otaNote,
+  /** Update this when more boards or behaviors have been observed on hardware. */
+  hardwareNote:
+    "Hardware status: only the M5Stack Stick-S3 default app has been flashed and seen to boot. Nothing else has been observed on hardware (pairing, typing, display, Improv, OTA, other boards); the other boards are compile-checked only.",
+  settingsNote:
+    "The installer never writes the NVS settings partition, so the layout is meant to keep stored settings across a reflash unless you choose to erase. This has not been observed.",
   features: [
     {
       title: "One config file",
@@ -31,7 +38,7 @@ export const site = {
     },
     {
       title: "Safe browser flashing",
-      body: "The installer writes bootloader, partitions and firmware only. Settings stored on the device are kept unless you choose to erase.",
+      body: "The installer writes four images: bootloader, partition table, boot_app0 and firmware. It never writes the settings partition.",
     },
   ],
   steps: [
@@ -43,7 +50,7 @@ export const site = {
   faq: [
     {
       q: "Which browsers work?",
-      a: "Browsers with Web Serial: Chrome, Edge and Opera on desktop. Safari and Firefox cannot flash.",
+      a: "Chromium-based browsers that provide Web Serial, such as Chrome, Edge and Opera. Safari and Firefox cannot flash.",
     },
     {
       q: "The port does not appear.",
@@ -51,11 +58,11 @@ export const site = {
     },
     {
       q: "Does the released firmware support OTA updates?",
-      a: "No. Release builds have OTA disabled. OTA is for local development builds, enabled by an ota_password in your own secrets.yaml.",
+      a: `No. ${otaNote}`,
     },
     {
       q: "How do I recover a bad flash?",
-      a: "Reflash from this page and choose to erase the device, or run pio run -t erase followed by pio run -t upload.",
+      a: "Reflash from this page and choose to erase the device (the erase option has not been tried on hardware), or run pio run -t erase followed by pio run -t upload.",
     },
     {
       q: "Bluetooth will not pair after an update.",

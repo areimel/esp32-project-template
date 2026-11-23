@@ -1,5 +1,6 @@
 ---
-/* Classes: section, section-title, board-grid, board-card, board-meta, btn, btn-primary, btn-ghost */
+/* Classes: board-grid, board-card, board-meta, btn, btn-primary, btn-ghost */
+import Section from "./Section.astro";
 import { boardSummary, type Board } from "../lib/project";
 interface Props {
   boards: Board[];
@@ -7,8 +8,7 @@ interface Props {
 const { boards } = Astro.props;
 ---
 
-<section class="section" id="install">
-  <h2 class="section-title">Choose your board</h2>
+<Section id="install" title="Choose your board">
   <div class="board-grid" data-board-picker>
     {
       boards.map((board, i) => (
@@ -20,6 +20,7 @@ const { boards } = Astro.props;
             class={i === 0 ? "btn btn-primary" : "btn btn-ghost"}
             data-select={board.id}
             aria-pressed={i === 0 ? "true" : "false"}
+            aria-controls={`install-${board.id}`}
           >
             Select
           </button>
@@ -27,7 +28,7 @@ const { boards } = Astro.props;
       ))
     }
   </div>
-</section>
+</Section>
 
 <script>
   const picker = document.querySelector<HTMLElement>("[data-board-picker]");
@@ -35,7 +36,8 @@ const { boards } = Astro.props;
     picker?.querySelectorAll<HTMLButtonElement>("[data-select]").forEach((b) => {
       const on = b.dataset.select === id;
       b.setAttribute("aria-pressed", String(on));
-      b.className = on ? "btn btn-primary" : "btn btn-ghost";
+      b.classList.toggle("btn-primary", on);
+      b.classList.toggle("btn-ghost", !on);
     });
     document.querySelectorAll<HTMLElement>("[data-install-for]").forEach((el) => {
       el.hidden = el.dataset.installFor !== id;
