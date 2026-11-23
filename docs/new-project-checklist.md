@@ -41,9 +41,10 @@ step names the file to edit and a command that shows it worked.
 
 - [ ] If you do not need it: delete `examples/macro-clicker/`, its
   `[env:sticks3-macro]`, the `-Iexamples/macro-clicker/include` flag in
-  `[env:native]`, its `test/test_macro_*` suites and
-  `scripts/tests/test_macro_schema.py`, then remove it from the docs and
-  `AGENTS.md`.
+  `[env:native]`, its `test/test_macro_*` suites,
+  `test/macro_controller_sim.h` and `scripts/tests/test_macro_schema.py`, then
+  remove it from the docs and `AGENTS.md`. Keep `lib/display/src/Draw.*`: the
+  default app's `Display` and `StatusView` use it.
 - [ ] If you keep it, read [its README](../examples/macro-clicker/README.md).
 
 ## 5. Secrets

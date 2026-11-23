@@ -36,7 +36,7 @@ export const site = {
   ],
   steps: [
     "Connect your board over USB with a data cable.",
-    "Choose your board below and press Install.",
+    "Choose your board and press Install.",
     "Pick the serial port in the browser prompt and confirm.",
     "Wait for the flash to finish, then follow any WiFi or pairing prompts.",
   ],

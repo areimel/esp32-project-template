@@ -48,15 +48,16 @@ size match the env, and close serial monitors. Port names are examples.
 ## `esp32c3` (DevKitM-1)
 
 - [ ] Compile-verified only. BOOT button (GPIO 9) and RGB LED (GPIO 8) work.
-- [ ] A build with OTA on (see the measured size in [docs/boards.md](docs/boards.md#memory)) boots
-  and completes an OTA update; the app partition is nearly full.
+- [ ] A build with OTA on boots and completes an OTA update; flash headroom with
+  OTA on is unmeasured and the app partition is nearly full (see
+  [docs/boards.md](docs/boards.md#memory)).
 - [ ] Bluetooth and WiFi coexist stably.
 
 ## `esp32` (classic DevKit)
 
 - [ ] Compile-verified only. BOOT button (GPIO 0) and plain LED (GPIO 2) work.
 - [ ] Browser install writes the bootloader at 0x1000 and the board boots.
-- [ ] Bluetooth and WiFi coexist stably on the 90% full app partition.
+- [ ] Bluetooth and WiFi coexist stably on the nearly full app partition (see [docs/boards.md](docs/boards.md#memory)).
 
 ## `sticks3-macro` (macro clicker example)
 

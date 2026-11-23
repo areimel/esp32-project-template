@@ -100,7 +100,9 @@ For the 240x135 panel only, built on M5GFX. It draws; apps decide what to show.
 | `holdProgress(action, remainingMs, done)` | Boot maintenance screen, `action` truncated to 11 characters |
 | `fatal(msg)` | Red halt screen |
 
-`Theme.h` holds the RGB565 palette. `src/StatusView.{h,cpp}` is the default
+`Theme.h` holds the RGB565 palette. `Draw.{h,cpp}` are shared text and shape
+helpers (namespace `draw`) used by `Display`, `StatusView` and the macro
+example's screens. `src/StatusView.{h,cpp}` is the default
 app's screen: a plain `StatusModel` (Bluetooth, WiFi and IP, battery, last
 action) and `drawStatus()`. Add screens by writing a model and a draw function;
 keep input logic out of them.

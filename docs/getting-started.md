@@ -58,7 +58,8 @@ Levels are set with `-DLOG_LEVEL=n` (0 off to 4 debug, default 3).
 | Single, double or long press on a button | Sends that button's key combo over BLE HID, if configured and the link is ready |
 | Hold every button at boot | Clears Bluetooth bonds: 3 s on 2-button boards, 5 s on 1-button boards |
 
-The bond-clear hold is measured after the display splash. After clearing,
+On boards with a display the hold timer starts after the splash (about
+700 ms), so keep the buttons held through it. After clearing,
 forget the device in the host's Bluetooth settings and pair again. Changing
 the HID report descriptor requires the same forget-and-re-pair step.
 
