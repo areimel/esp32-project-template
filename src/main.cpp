@@ -38,7 +38,6 @@ bool charging = false;
 const char* lastAction = "";
 uint32_t ledOffAt = 0;
 bool ledOn = false;
-bool wasUpdating = true;  // forces a gesture reset on first loop
 #if FEATURE_BLE_HID
 BleKeyboard keyboard;
 uint32_t lastGeneration = 0;
@@ -55,13 +54,6 @@ bool linkReady() {
   return keyboard.ready();
 #endif
   return true;  // no transport: actions are only logged
-}
-
-bool updating() {
-#if FEATURE_OTA
-  return net::otaActive();
-#endif
-  return false;
 }
 
 // A send is never retried or queued; input on a not-ready link is discarded.
@@ -90,8 +82,9 @@ void readBattery() {
 }
 
 #if FEATURE_DISPLAY
-StatusModel model() {
+StatusModel model(bool updating = false) {
   StatusModel m;
+  m.updating = updating;
 #if FEATURE_BLE_HID
   m.ble = keyboard.ready()       ? BleStatus::Ready
           : keyboard.connected() ? BleStatus::Connecting
@@ -103,7 +96,6 @@ StatusModel model() {
 #endif
   m.battery = battery;
   m.charging = charging;
-  m.updating = updating();
   m.lastAction = lastAction;
   return m;
 }
@@ -114,6 +106,20 @@ void refreshScreen(uint32_t now) {
   drawStatus(display, shown = next);
 }
 #endif  // FEATURE_DISPLAY
+
+#if FEATURE_OTA
+bool otaStarted = false;  // set by the start hook; still set after updateOta() only if the transfer failed
+// Runs inside updateOta() as a transfer begins; the loop does not run until it fails or restarts.
+void onOtaStart() {
+  otaStarted = true;
+#if FEATURE_BLE_HID
+  keyboard.releaseAll();  // a key held mid-press must not stay down on the host for the transfer
+#endif
+#if FEATURE_DISPLAY
+  drawStatus(display, shown = model(true));
+#endif
+}
+#endif
 
 void resetGestures(uint32_t now) {
   for (uint8_t i = 0; i < BUTTON_SLOTS; ++i) {
@@ -126,8 +132,7 @@ void resetGestures(uint32_t now) {
 void setup() {
   Serial.begin(115200);  // never wait for a USB serial host
   board::begin(AppConfig::DISPLAY_BRIGHTNESS);
-  LOG_I("%s %s on %s (%u buttons)", AppConfig::PROJECT_NAME, FIRMWARE_VERSION, BOARD_LABEL,
-        board::buttonCount());
+  LOG_I("%s %s on %s (%u buttons)", AppConfig::PROJECT_NAME, FIRMWARE_VERSION, BOARD_LABEL, board::buttonCount());
 #if FEATURE_DISPLAY
   display.begin(board::display(), AppConfig::DISPLAY_BRIGHTNESS);
   display.splash(AppConfig::PROJECT_NAME, FIRMWARE_VERSION);
@@ -150,7 +155,7 @@ void setup() {
   net::beginImprov(AppConfig::PROJECT_NAME, FIRMWARE_VERSION, ESP.getChipModel(), AppConfig::PROJECT_NAME);
 #endif
 #if FEATURE_OTA
-  net::beginOta(AppConfig::WIFI_HOSTNAME, AppConfig::OTA_PASSWORD);
+  net::beginOta(AppConfig::WIFI_HOSTNAME, AppConfig::OTA_PASSWORD, onOtaStart);
 #endif
   board::update();
   resetGestures(millis());
@@ -158,34 +163,30 @@ void setup() {
 }
 
 void loop() {
+#if FEATURE_OTA
+  net::updateOta();  // a transfer runs inline; success restarts, so returning after a start means it failed
+  if (otaStarted) {
+    otaStarted = false;
+    board::update();
+    resetGestures(millis());  // input during the transfer is discarded, never replayed
+  }
+#endif
   board::update();
   const uint32_t now = millis();
 #if FEATURE_WIFI
   net::updateWifi(now);
   net::updateImprov();
 #endif
-#if FEATURE_OTA
-  net::updateOta();
-#endif
-  const bool busy = updating();
-  if (busy) {
 #if FEATURE_BLE_HID
-    keyboard.releaseAll();
-#endif
-  } else {
-    if (wasUpdating) resetGestures(now);
-#if FEATURE_BLE_HID
-    // A link change may have dropped a stroke; it is never resumed.
-    if (keyboard.linkGeneration() != lastGeneration) {
-      lastGeneration = keyboard.linkGeneration();
-      for (Button& b : buttons) b.gesture.cancel();
-    }
-#endif
-    for (uint8_t i = 0; i < BUTTON_SLOTS; ++i) {
-      handle(i, buttons[i].gesture.update(board::isPressed(i), now), now);
-    }
+  // A link change may have dropped a stroke; it is never resumed.
+  if (keyboard.linkGeneration() != lastGeneration) {
+    lastGeneration = keyboard.linkGeneration();
+    for (Button& b : buttons) b.gesture.cancel();
   }
-  wasUpdating = busy;
+#endif
+  for (uint8_t i = 0; i < BUTTON_SLOTS; ++i) {
+    handle(i, buttons[i].gesture.update(board::isPressed(i), now), now);
+  }
 #if FEATURE_BLE_HID
   keyboard.update(now);
 #endif
