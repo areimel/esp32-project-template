@@ -59,7 +59,7 @@ jobs:
           done
       - run: bash scripts/check.sh
       - name: Package the validated firmware build
-        run: python scripts/package_firmware.py --version "$VERSION" --commit "$GITHUB_SHA" --output web/public/firmware
+        run: python scripts/package_firmware.py --version "$VERSION" --output web/public/firmware
       - name: Build the site with the release bundle
         working-directory: web
         env:

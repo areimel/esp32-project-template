@@ -28,7 +28,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: pio run -e ${{ matrix.env }}
+      - name: Build firmware
+        env:
+          ENV: ${{ matrix.env }}
+        run: pio run -e "$ENV"
 
   test:
     needs: envs
